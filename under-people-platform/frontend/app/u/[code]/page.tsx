@@ -1,6 +1,5 @@
 'use client';
 
-import { notFound } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function PublicProfilePage({ params }: { params: { code: string } }) {
