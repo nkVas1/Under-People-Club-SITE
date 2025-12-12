@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { SITE_URL } from '@/lib/config';
 import UserQRCode from './UserQRCode';
 import gsap from 'gsap';
 
@@ -70,7 +71,7 @@ export default function ShelterProfile() {
         <p className="text-[#8A0303] font-mono text-sm tracking-[0.2em] mb-8">{user.role.toUpperCase()} // {user.clan}</p>
 
         {/* QR Код */}
-        <UserQRCode value={`https://underpeople.club/u/${user.ref_code}`} label="PASS KEY" />
+        <UserQRCode value={`${SITE_URL}/u/${user.ref_code}`} label="PASS KEY" />
         
         <div className="mt-8 w-full border-t border-[#222] pt-4 text-center">
           <p className="text-zinc-600 text-[10px] font-mono mb-1">REFERRAL CODE</p>
