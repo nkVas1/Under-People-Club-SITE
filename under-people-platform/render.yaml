@@ -1,0 +1,61 @@
+services:
+  - type: web
+    name: under-people-api
+    runtime: python
+    runtimeVersion: 3.11.6
+    startCommand: "gunicorn app.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:10000"
+    plan: free
+    
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: postgres_db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: redis_service
+          type: redis
+          property: connectionString
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false  # Установить вручную через Render dashboard
+      - key: SECRET_KEY
+        sync: false  # Установить вручную через Render dashboard
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+      - key: ALLOWED_ORIGINS
+        value: "http://localhost:3000,https://vercel-domain.vercel.app,https://underpeople.club"
+
+    routes:
+      - path: /
+        matchType: prefix
+
+  - type: postgres
+    name: postgres_db
+    version: 15
+    plan: free
+    
+    envVars:
+      - key: POSTGRES_USER
+        value: underpeople
+      - key: POSTGRES_PASSWORD
+        sync: false  # Установить вручную или использовать переменную
+      - key: POSTGRES_DB
+        value: underpeople_db
+
+  - type: redis
+    name: redis_service
+    version: 7
+    plan: free
+
+databases:
+  - name: postgres_db
+    databaseName: underpeople_db
+    user: underpeople

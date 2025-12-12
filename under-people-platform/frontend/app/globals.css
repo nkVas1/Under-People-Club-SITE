@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --blood-red: #8A0303;
+  --void-black: #050505;
+  --concrete: #1A1A1A;
+  --neon-glow: 0 0 10px rgba(138, 3, 3, 0.7);
+}
+
+body {
+  background-color: var(--void-black);
+  color: #e5e5e5;
+  font-family: 'System-ui', -apple-system, sans-serif;
+}
+
+/* Эффект шума для гранжа */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise" /></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.05"/></svg>');
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Гланные элементы */
+html {
+  scroll-behavior: smooth;
+}
+
+input:focus,
+textarea:focus {
+  outline: 2px solid var(--blood-red);
+  outline-offset: 2px;
+}
+
+/* Кастомный скролл */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--void-black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--blood-red);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c10505;
+}
+
+/* Утилиты */
+.glow-text {
+  text-shadow: 0 0 20px rgba(138, 3, 3, 0.8);
+}
+
+.clip-path-slant {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 100%, 8px 100%);
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Анимации */
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(500%);
+  }
+}
+
+@keyframes scan-fast {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(200%);
+  }
+}
+
+.animate-scan-fast {
+  animation: scan-fast 0.5s linear infinite;
+}
+
+/* Бекдроп */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+/* Шрифты */
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syncopate:wght@400;700&display=swap');
+
+.font-mono {
+  font-family: 'Space Mono', monospace;
+}
+
+.font-display {
+  font-family: 'Syncopate', sans-serif;
+}
+
+/* Цвета */
+.text-blood {
+  color: var(--blood-red);
+}
+
+.bg-blood {
+  background-color: var(--blood-red);
+}
+
+.border-blood {
+  border-color: var(--blood-red);
+}
+
+.shadow-blood {
+  box-shadow: 0 0 20px rgba(138, 3, 3, 0.3);
+}
+
+.hover\:shadow-blood:hover {
+  box-shadow: 0 0 30px rgba(138, 3, 3, 0.6);
+}
+
+/* Фокус состояния */
+.focus-visible\:ring-blood:focus-visible {
+  outline: 2px solid var(--blood-red);
+}
+
+/* Заглавные буквы */
+.uppercase {
+  letter-spacing: 0.05em;
+}
