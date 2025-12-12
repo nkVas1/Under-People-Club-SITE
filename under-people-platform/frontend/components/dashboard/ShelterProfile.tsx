@@ -1,122 +1,48 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { SITE_URL } from '@/lib/config';
+import { useAuth } from '@/hooks/useAuth';
+import TelegramAuth from '@/components/auth/TelegramAuth';
 import UserQRCode from './UserQRCode';
+import { SITE_URL } from '@/lib/config';
 import gsap from 'gsap';
-
-// Telegram Login Widget (optional - graceful fallback if not installed)
-let LoginButton: any = null;
-try {
-  const TelegramAuth = require('@telegram-auth/react');
-  LoginButton = TelegramAuth.LoginButton;
-} catch (e) {
-  // Package not installed yet, use fallback
-  console.warn('Telegram Auth not installed, using demo login');
-}
+import { useEffect } from 'react';
 
 export default function ShelterProfile() {
-  const { user, isAuthenticated, login } = useAuthStore();
-  const [loading, setLoading] = useState(true);
+  const { user, isAuthenticated, isHydrated, logout } = useAuth();
 
-  // Handle Telegram authentication
-  const handleTelegramAuth = (data: any) => {
-    console.log('🔐 Telegram auth data:', data);
-    
-    // In production: send data to backend for signature verification
-    // For now: use data directly (NOT SECURE - demo only)
-    const refCode = `UP-${data.id.toString().slice(-4)}`;
-    
-    login({
-      id: data.id.toString(),
-      username: data.username || data.first_name || 'Member',
-      telegram_id: data.id,
-      up_coins: 100,
-      role: 'ranger',
-      clan: 'Novice',
-      ref_code: refCode,
-      avatar_url: data.photo_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.id}`,
-      token: 'telegram-token'
-    });
-    
-    setLoading(false);
-  };
-
-  // Demo login fallback (if Telegram not configured)
+  // Анимация входа
   useEffect(() => {
-    if (!isAuthenticated) {
-      const demoLoginTimer = setTimeout(() => {
-        // Try to use actual Telegram widget first
-        // If no auth within 2 seconds, show Telegram button or demo
-        if (!isAuthenticated) {
-          setLoading(false);
-        }
-      }, 2000);
-
-      return () => clearTimeout(demoLoginTimer);
-    }
-    setLoading(false);
-    return undefined;
-  }, [isAuthenticated]);
-
-  // Анимация появления
-  useEffect(() => {
-    if (!loading && user) {
+    if (isAuthenticated && isHydrated) {
       gsap.fromTo('.dashboard-item', 
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, stagger: 0.1, duration: 0.8, ease: 'power2.out' }
       );
     }
-  }, [loading, user]);
+  }, [isAuthenticated, isHydrated]);
 
-  if (loading) {
+  // Пока грузим данные из localStorage — показываем лоадер
+  if (!isHydrated) {
     return (
-      <div className="flex h-full items-center justify-center text-[#8A0303] font-mono animate-pulse tracking-widest">
-        ESTABLISHING SECURE CONNECTION...
+      <div className="flex h-full items-center justify-center text-zinc-600 font-mono animate-pulse tracking-widest text-xs">
+        [ СИСТЕМА ЗАГРУЗКИ... ]
       </div>
     );
   }
 
-  // Show Telegram login if not authenticated
+  // Если не вошел — показываем форму входа
   if (!isAuthenticated || !user) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-[#8A0303] font-mono gap-6">
-        <h2 className="text-4xl font-black tracking-widest uppercase text-white">IDENTIFICATION REQUIRED</h2>
-        <p className="text-zinc-500 max-w-md text-center text-sm">
-          Доступ к системе Убежища разрешен только верифицированным членам клуба.
-        </p>
-
-        {/* Telegram Login Widget */}
-        {LoginButton ? (
-          <div className="grayscale hover:grayscale-0 transition-all duration-500">
-            <LoginButton
-              botUsername="UPCworld_bot"
-              onAuthCallback={handleTelegramAuth}
-              buttonSize="large"
-              cornerRadius={0}
-              showAvatar={false}
-              lang="ru"
-              requestAccess="write"
-            />
-          </div>
-        ) : (
-          <div className="bg-[#0a0a0a] border border-[#333] p-6 text-center max-w-md">
-            <p className="text-sm text-zinc-400 mb-4">
-              Telegram Auth will be available after installation
-            </p>
-            <button
-              onClick={() => handleTelegramAuth({
-                id: 12345678,
-                first_name: 'Demo',
-                username: 'DemoUser',
-                photo_url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=demo'
-              })}
-              className="w-full px-4 py-2 bg-[#8A0303] text-white font-mono font-bold uppercase hover:bg-[#a00000] transition-colors"
-            >
-              Continue with Demo Data
-            </button>
-          </div>
-        )}
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] gap-8">
+        <div className="text-center space-y-2">
+          <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-600">
+            Требуется идентификация
+          </h2>
+          <p className="text-[#8A0303] font-mono text-xs tracking-[0.3em] uppercase">
+            Закрытая территория // Только для членов
+          </p>
+        </div>
+        
+        {/* Компонент входа через Telegram */}
+        <TelegramAuth />
       </div>
     );
   }
@@ -124,6 +50,14 @@ export default function ShelterProfile() {
   return (
     <div className="flex flex-col lg:flex-row gap-8 h-full max-w-7xl mx-auto">
       
+      {/* Кнопка выхода (Logout) */}
+      <button 
+        onClick={logout}
+        className="fixed top-6 right-6 z-50 text-[10px] text-zinc-600 hover:text-red-500 font-mono uppercase tracking-widest transition-colors"
+      >
+        [ Завершить сеанс ]
+      </button>
+
       {/* ЛЕВАЯ КОЛОНКА: ID CARD */}
       <div className="dashboard-item lg:w-1/3 bg-[#0a0a0a] border border-[#222] p-8 relative flex flex-col items-center">
         {/* Статус */}
@@ -142,10 +76,10 @@ export default function ShelterProfile() {
         <p className="text-[#8A0303] font-mono text-sm tracking-[0.2em] mb-8">{user.role.toUpperCase()} // {user.clan}</p>
 
         {/* QR Код */}
-        <UserQRCode value={`${SITE_URL}/u/${user.ref_code}`} label="PASS KEY" />
+        <UserQRCode value={`${SITE_URL}/u/${user.ref_code}`} label="ПРОПУСК" />
         
         <div className="mt-8 w-full border-t border-[#222] pt-4 text-center">
-          <p className="text-zinc-600 text-[10px] font-mono mb-1">REFERRAL CODE</p>
+          <p className="text-zinc-600 text-[10px] font-mono mb-1">КОД РЕФЕРАЛА</p>
           <p className="text-xl text-white font-mono tracking-widest select-all cursor-pointer hover:text-[#8A0303] transition-colors">
             {user.ref_code}
           </p>
@@ -158,7 +92,7 @@ export default function ShelterProfile() {
         {/* Баланс (Крупно) */}
         <div className="dashboard-item bg-gradient-to-r from-[#140505] to-black border border-[#8A0303]/20 p-8 flex justify-between items-center relative overflow-hidden group">
           <div className="relative z-10">
-            <h3 className="text-zinc-500 text-xs font-mono uppercase tracking-widest mb-2">Wallet Balance</h3>
+            <h3 className="text-zinc-500 text-xs font-mono uppercase tracking-widest mb-2">Баланс кошелька</h3>
             <div className="text-6xl md:text-7xl font-black text-white flex items-baseline gap-2">
               {user.up_coins} <span className="text-xl text-[#8A0303] font-normal font-mono">UP</span>
             </div>
@@ -176,19 +110,18 @@ export default function ShelterProfile() {
         {/* Сетка статистики */}
         <div className="grid grid-cols-2 gap-6">
           <div className="dashboard-item bg-[#0f0f0f] p-6 border border-[#222] hover:border-[#333] transition-colors">
-            <h4 className="text-zinc-500 text-[10px] uppercase tracking-widest mb-4">Achievements</h4>
+            <h4 className="text-zinc-500 text-[10px] uppercase tracking-widest mb-4">Достижения</h4>
             <div className="flex gap-2">
-              {/* Бейджи (заглушки) */}
               <div className="w-10 h-10 bg-[#222] rounded-full flex items-center justify-center text-xs text-zinc-600 border border-[#333]" title="First Blood">🩸</div>
               <div className="w-10 h-10 bg-[#222] rounded-full flex items-center justify-center text-xs text-zinc-600 border border-[#333]" title="Night Owl">🦉</div>
             </div>
           </div>
 
           <div className="dashboard-item bg-[#0f0f0f] p-6 border border-[#222] hover:border-[#333] transition-colors">
-            <h4 className="text-zinc-500 text-[10px] uppercase tracking-widest mb-4">Referral Rank</h4>
+            <h4 className="text-zinc-500 text-[10px] uppercase tracking-widest mb-4">Ранг рекрутера</h4>
             <div className="flex items-end gap-2">
-              <span className="text-3xl font-bold text-white">Novice</span>
-              <span className="text-xs text-zinc-600 mb-1">0/3 to Upgrade</span>
+              <span className="text-3xl font-bold text-white">Новичок</span>
+              <span className="text-xs text-zinc-600 mb-1">0/3 до повышения</span>
             </div>
             <div className="w-full bg-[#222] h-1 mt-3">
               <div className="w-[10%] h-full bg-[#8A0303]" />
@@ -196,16 +129,16 @@ export default function ShelterProfile() {
           </div>
         </div>
 
-        {/* Лог активности (Стилизация под терминал) */}
+        {/* Лог активности */}
         <div className="dashboard-item flex-1 bg-black border border-[#222] p-6 font-mono text-xs relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-6 bg-[#111] flex items-center px-4 border-b border-[#222]">
-            <span className="text-zinc-500">SYSTEM_LOGS.txt</span>
+            <span className="text-zinc-500">СИСТЕМНЫЙ_ЖУРНАЛ.log</span>
           </div>
           <div className="mt-6 space-y-2 text-zinc-400 h-32 overflow-y-auto custom-scrollbar">
-            <p><span className="text-blue-500">[INFO]</span> Connection established.</p>
-            <p><span className="text-green-500">[SUCCESS]</span> Daily bonus +10 UP received.</p>
-            <p><span className="text-[#8A0303]">[ALERT]</span> New event "Cyber Halloween" announced.</p>
-            <p><span className="text-zinc-600">[SYSTEM]</span> Profile data synced.</p>
+            <p><span className="text-blue-500">[INFO]</span> Соединение установлено.</p>
+            <p><span className="text-green-500">[SUCCESS]</span> Ежедневный бонус +10 UP получен.</p>
+            <p><span className="text-[#8A0303]">[ALERT]</span> Новое событие объявлено.</p>
+            <p><span className="text-zinc-600">[SYSTEM]</span> Данные профиля синхронизированы.</p>
           </div>
         </div>
 

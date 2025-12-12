@@ -11,7 +11,8 @@ export interface User {
   clan: string;
   ref_code: string;
   avatar_url?: string;
-  token: string;
+  is_verified?: boolean;
+  token?: string;
 }
 
 interface AuthState {
@@ -27,9 +28,19 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       isAuthenticated: false,
-      login: (userData) => set({ user: userData, isAuthenticated: true }),
-      logout: () => set({ user: null, isAuthenticated: false }),
-      updateCoins: (amount) => 
+      
+      login: (userData: User) => {
+        console.log("🔐 [AUTH] Logging in:", userData.username);
+        set({ user: userData, isAuthenticated: true });
+      },
+      
+      logout: () => {
+        console.log("🔒 [AUTH] Logging out");
+        set({ user: null, isAuthenticated: false });
+        localStorage.removeItem('up-cart-storage');
+      },
+
+      updateCoins: (amount: number) => 
         set((state) => ({
           user: state.user ? { ...state.user, up_coins: amount } : null
         })),
@@ -37,6 +48,7 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'up-auth-storage',
       storage: createJSONStorage(() => localStorage),
+      skipHydration: true, // Критично для Next.js! Гидрируем вручную через useAuth хук
     }
   )
 );
