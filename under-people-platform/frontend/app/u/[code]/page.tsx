@@ -18,31 +18,31 @@ export default function PublicProfilePage({ params }: { params: { code: string }
 
   if (isValid === null) {
     return (
-      <main className="min-h-screen bg-[#050505] text-white flex items-center justify-center font-mono">
+      <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center font-mono">
         <div className="text-center">
           <div className="animate-pulse mb-4">
             <div className="text-[#8A0303] text-2xl font-black tracking-widest">█ █ █</div>
           </div>
           <p className="text-sm text-zinc-500">SCANNING DATABASE...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (isValid === false) {
     return (
-      <main className="min-h-screen bg-[#100000] text-red-500 flex items-center justify-center font-mono">
+      <div className="min-h-screen bg-[#100000] text-red-500 flex items-center justify-center font-mono">
         <div className="border-2 border-red-700 p-8 text-center max-w-md">
           <h1 className="text-3xl font-black uppercase tracking-widest mb-4">ERROR</h1>
           <p className="text-sm mb-4">INVALID OR EXPIRED ACCESS CODE</p>
           <p className="text-xs text-red-700">CODE: {params.code}</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* Noise overlay */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><filter id=%22noise%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22/></filter><rect width=%22100%22 height=%22100%22 fill=%22%23fff%22 filter=%22url(%23noise)%22/></svg>')]" opacity-10 pointer-events-none" />
 
@@ -96,6 +96,6 @@ export default function PublicProfilePage({ params }: { params: { code: string }
         <p>SECURE DATABASE CONNECTION</p>
         <p className="text-[#8A0303]">VERIFIED TIMESTAMP: {new Date().toLocaleString()}</p>
       </div>
-    </main>
+    </div>
   );
 }
