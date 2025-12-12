@@ -65,7 +65,7 @@ export default function ArsenalPage() {
     const totalPrice = total();
 
     // Генерируем ссылку на бота с параметрами
-    const botDeepLink = `https://t.me/underpeople_club_bot?start=pay_${totalPrice}_${items.map((i) => i.id).join('_')}`;
+    const botDeepLink = `https://t.me/UPCworld_bot?start=pay_${totalPrice}_${items.map((i) => i.id).join('_')}`;
 
     // Для демо показываем информацию в консоль
     console.log('🛍️ Checkout Info:');

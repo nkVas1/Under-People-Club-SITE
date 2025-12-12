@@ -55,6 +55,16 @@ const SECTIONS = [
     img: '/img/network_bg.jpg',
     href: '/network' 
   },
+  { 
+    id: 6, 
+    title: 'OVERSEER', 
+    subtitle: 'ADMIN_CONTROL',
+    description: 'Терминал управления. Только для организаторов.',
+    color: 'bg-[#100000]', 
+    hoverColor: 'bg-[#200000]',
+    img: '/img/overseer_bg.jpg',
+    href: '/overseer' 
+  },
 ];
 
 export default function ColumnNav({ show }: { show: boolean }) {
