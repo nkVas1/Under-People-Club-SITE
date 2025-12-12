@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const path = require('path')
+
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
@@ -51,6 +53,14 @@ const nextConfig = {
       permanent: false,
     },
   ],
+  webpack: (config) => {
+    // Ensure '@' alias resolves to project root (frontend/) during build
+    config.resolve = config.resolve || {}
+    config.resolve.alias = Object.assign({}, config.resolve.alias, {
+      '@': path.resolve(__dirname),
+    })
+    return config
+  },
 };
 
 module.exports = nextConfig;
