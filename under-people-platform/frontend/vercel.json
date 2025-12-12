@@ -2,7 +2,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next/standalone",
   "framework": "nextjs",
-  "nodeVersion": "18.x",
   "env": [
     {
       "key": "NEXT_PUBLIC_API_URL",
