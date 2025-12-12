@@ -4,9 +4,9 @@
   "description": "Under People Club - Cyberpunk Community Platform",
   "private": true,
   "scripts": {
-    "dev": "cd frontend && npm run dev",
-    "build": "cd frontend && npm install --legacy-peer-deps && npm run build",
-    "start": "cd frontend && npm run start",
+    "dev": "cd && npm run dev",
+    "build": "cd && npm install --legacy-peer-deps && npm run build",
+    "start": "cd && npm run start",
     "lint": "next lint",
     "export": "next export"
   },
