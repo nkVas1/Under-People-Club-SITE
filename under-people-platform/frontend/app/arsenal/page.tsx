@@ -3,7 +3,7 @@
 import BackButton from '@/components/ui/BackButton';
 import ProductCard from '@/components/arsenal/ProductCard';
 import { useCartStore } from '@/store/cartStore';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { SITE_URL } from '@/lib/config';
 
 interface Product {
