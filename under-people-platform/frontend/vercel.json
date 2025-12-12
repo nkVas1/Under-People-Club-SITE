@@ -2,14 +2,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "env": [
-    {
-      "key": "NEXT_PUBLIC_API_URL",
-      "value": "https://api.underpeople.club"
-    },
-    {
-      "key": "NEXT_PUBLIC_BOT_NAME",
-      "value": "under_people_bot"
-    }
-  ]
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://api.underpeople.club",
+    "NEXT_PUBLIC_BOT_NAME": "under_people_bot"
+  }
 }
