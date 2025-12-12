@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from sqlalchemy import Column, String, Integer, DateTime, Boolean, ForeignKey, Enum, Float, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from app.db.base import Base
 
 class UserRole(str, PyEnum):
@@ -25,7 +25,11 @@ class User(Base):
     
     # Referral System
     referral_code = Column(String, unique=True, index=True)
-    invited_by_code = Column(String, ForeignKey("users.referral_code"), nullable=True)
+    invited_by_code = Column(
+        String, 
+        ForeignKey("users.referral_code", use_alter=True, name="fk_user_referral_code"), 
+        nullable=True
+    )
     
     # Status
     role = Column(Enum(UserRole), default=UserRole.RANGER)
@@ -34,7 +38,11 @@ class User(Base):
     last_login = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    referrals = relationship("User", backref="referrer", remote_side=[referral_code])
+    referrals = relationship(
+        "User", 
+        backref=backref("referrer", remote_side=[referral_code]),
+        foreign_keys=[invited_by_code]
+    )
     orders = relationship("Order", back_populates="user")
     cards = relationship("UserCard", back_populates="user")
 
