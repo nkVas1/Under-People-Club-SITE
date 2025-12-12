@@ -1,5 +1,6 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import gsap from 'gsap'
 
 const SECTIONS = [
@@ -12,7 +13,7 @@ const SECTIONS = [
 
 export default function ColumnNav({ show }: { show: boolean }) {
   const columnsRef = useRef<(HTMLDivElement | null)[]>([])
-  const [, setActiveSection] = useState<number | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     if (show) {
@@ -35,6 +36,10 @@ export default function ColumnNav({ show }: { show: boolean }) {
     }
   }, [show])
 
+  const handleNavigate = (href: string) => {
+    router.push(href)
+  }
+
   return (
     <div className="flex w-full h-screen overflow-hidden bg-black">
       {SECTIONS.map((section, index) => (
@@ -43,7 +48,7 @@ export default function ColumnNav({ show }: { show: boolean }) {
           ref={el => { columnsRef.current[index] = el }}
           className={`relative flex-1 h-full border-r border-[#333] ${section.color}
             transition-all duration-500 ease-out hover:flex-[2] hover:bg-blood group cursor-pointer overflow-hidden`}
-          onClick={() => setActiveSection(section.id)}
+          onClick={() => handleNavigate(section.href)}
         >
           {/* Декоративная вертикальная линия слева */}
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-transparent via-blood to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
