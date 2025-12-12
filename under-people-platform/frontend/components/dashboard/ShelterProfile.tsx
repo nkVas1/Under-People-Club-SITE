@@ -5,30 +5,59 @@ import { SITE_URL } from '@/lib/config';
 import UserQRCode from './UserQRCode';
 import gsap from 'gsap';
 
+// Telegram Login Widget (optional - graceful fallback if not installed)
+let LoginButton: any = null;
+try {
+  const TelegramAuth = require('@telegram-auth/react');
+  LoginButton = TelegramAuth.LoginButton;
+} catch (e) {
+  // Package not installed yet, use fallback
+  console.warn('Telegram Auth not installed, using demo login');
+}
+
 export default function ShelterProfile() {
   const { user, isAuthenticated, login } = useAuthStore();
   const [loading, setLoading] = useState(true);
 
-  // Имитация входа (для демонстрации, пока нет бэкенда)
+  // Handle Telegram authentication
+  const handleTelegramAuth = (data: any) => {
+    console.log('🔐 Telegram auth data:', data);
+    
+    // In production: send data to backend for signature verification
+    // For now: use data directly (NOT SECURE - demo only)
+    const refCode = `UP-${data.id.toString().slice(-4)}`;
+    
+    login({
+      id: data.id.toString(),
+      username: data.username || data.first_name || 'Member',
+      telegram_id: data.id,
+      up_coins: 100,
+      role: 'ranger',
+      clan: 'Novice',
+      ref_code: refCode,
+      avatar_url: data.photo_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.id}`,
+      token: 'telegram-token'
+    });
+    
+    setLoading(false);
+  };
+
+  // Demo login fallback (if Telegram not configured)
   useEffect(() => {
-    setTimeout(() => {
-      if (!isAuthenticated) {
-        // ДЕМО ДАННЫЕ (Удалить при подключении API)
-        login({
-          id: 'uuid-1234',
-          username: 'CyberStalker',
-          telegram_id: 12345678,
-          up_coins: 666,
-          role: 'ranger',
-          clan: 'Outcasts',
-          ref_code: 'UP-X7Z9',
-          avatar_url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Felix',
-          token: 'demo-token'
-        });
-      }
+    if (!isAuthenticated) {
+      const demoLoginTimer = setTimeout(() => {
+        // Try to use actual Telegram widget first
+        // If no auth within 2 seconds, show Telegram button or demo
+        if (!isAuthenticated) {
+          setLoading(false);
+        }
+      }, 2000);
+
+      return () => clearTimeout(demoLoginTimer);
+    } else {
       setLoading(false);
-    }, 1500);
-  }, [isAuthenticated, login]);
+    }
+  }, [isAuthenticated]);
 
   // Анимация появления
   useEffect(() => {
@@ -48,7 +77,49 @@ export default function ShelterProfile() {
     );
   }
 
-  if (!user) return <div className="text-white">ACCESS DENIED</div>;
+  // Show Telegram login if not authenticated
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-[#8A0303] font-mono gap-6">
+        <h2 className="text-4xl font-black tracking-widest uppercase text-white">IDENTIFICATION REQUIRED</h2>
+        <p className="text-zinc-500 max-w-md text-center text-sm">
+          Доступ к системе Убежища разрешен только верифицированным членам клуба.
+        </p>
+
+        {/* Telegram Login Widget */}
+        {LoginButton ? (
+          <div className="grayscale hover:grayscale-0 transition-all duration-500">
+            <LoginButton
+              botUsername="UPCworld_bot"
+              onAuthCallback={handleTelegramAuth}
+              buttonSize="large"
+              cornerRadius={0}
+              showAvatar={false}
+              lang="ru"
+              requestAccess="write"
+            />
+          </div>
+        ) : (
+          <div className="bg-[#0a0a0a] border border-[#333] p-6 text-center max-w-md">
+            <p className="text-sm text-zinc-400 mb-4">
+              Telegram Auth will be available after installation
+            </p>
+            <button
+              onClick={() => handleTelegramAuth({
+                id: 12345678,
+                first_name: 'Demo',
+                username: 'DemoUser',
+                photo_url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=demo'
+              })}
+              className="w-full px-4 py-2 bg-[#8A0303] text-white font-mono font-bold uppercase hover:bg-[#a00000] transition-colors"
+            >
+              Continue with Demo Data
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 h-full max-w-7xl mx-auto">
