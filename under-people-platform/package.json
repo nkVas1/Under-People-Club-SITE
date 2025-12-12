@@ -17,7 +17,10 @@
     "node": "18.x",
     "npm": "9.x"
   }
-  ,"devDependencies": {
+  ,"dependencies": {
+    "next": "14.2.35"
+  },
+  "devDependencies": {
     "next": "14.2.35"
   }
 }
