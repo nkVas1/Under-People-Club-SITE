@@ -1,0 +1,139 @@
+🚀 БЫСТРЫЙ СТАРТ ДЕПЛОЯ НА RENDER.COM
+════════════════════════════════════════════════════════════════════════════════
+
+📍 ВЫ ЗДЕСЬ:
+   GitHub repository ✅ 
+   Frontend готов ✅
+   Backend готов ✅
+   
+➡️ СЛЕДУЮЩИЙ ШАГ: Разместить в облаке
+
+════════════════════════════════════════════════════════════════════════════════
+5 ШАГОВ К LIVE (30 МИНУТ)
+════════════════════════════════════════════════════════════════════════════════
+
+ШАГИ:
+─────
+
+1️⃣  RENDER.COM РЕГИСТРАЦИЯ
+   ├─ Перейти: https://render.com
+   ├─ Sign Up → GitHub
+   └─ Авторизовать доступ к репозиториям
+
+2️⃣  СОЗДАТЬ POSTGRESQL БАЗУ
+   ├─ Dashboard → New + → PostgreSQL
+   ├─ Name: underpeople-db
+   ├─ Plan: Free
+   ├─ Create Database
+   └─ 💾 Скопировать: Internal Database URL
+
+3️⃣  СОЗДАТЬ REDIS
+   ├─ New + → Redis
+   ├─ Name: underpeople-redis
+   ├─ Plan: Free
+   ├─ Create Redis
+   └─ 💾 Скопировать: Redis URL
+
+4️⃣  РАЗВЕРНУТЬ API
+   ├─ New + → Web Service
+   ├─ Repository: under-people-platform
+   ├─ Name: under-people-api
+   ├─ Runtime: Python 3.11
+   ├─ Build Cmd: pip install -r backend/requirements.txt
+   ├─ Start Cmd: cd backend && gunicorn app.main:app --workers 2 ...
+   ├─ Advanced → Add Variables (из render.yaml):
+   │  ├─ DATABASE_URL = [скопировать из БД]
+   │  ├─ REDIS_URL = [скопировать из Redis]
+   │  ├─ TELEGRAM_BOT_TOKEN = [см. шаг 5]
+   │  └─ SECRET_KEY = [генерируется]
+   └─ Create Web Service ⏳ (2-3 мин)
+
+5️⃣  TELEGRAM BOT TOKEN
+   ├─ Telegram → @BotFather
+   ├─ /newbot
+   ├─ Имя: under_people_bot
+   ├─ 💾 Скопировать: API Token
+   └─ Вставить в TELEGRAM_BOT_TOKEN на Render
+
+════════════════════════════════════════════════════════════════════════════════
+РЕЗУЛЬТАТ
+════════════════════════════════════════════════════════════════════════════════
+
+API Live:    https://under-people-api.onrender.com
+Swagger UI:  https://under-people-api.onrender.com/docs
+Health:      https://under-people-api.onrender.com/health
+
+════════════════════════════════════════════════════════════════════════════════
+КОНФИГУРАЦИЯ (скопировать в Render Environment Variables)
+════════════════════════════════════════════════════════════════════════════════
+
+KEY                           VALUE
+────────────────────────────────────────────────────────────────────────────────
+PYTHON_VERSION                3.11.6
+ENVIRONMENT                   production
+DEBUG                          false
+DATABASE_URL                  postgresql://user:pass@host:5432/dbname
+REDIS_URL                      redis://default:password@host:6379
+TELEGRAM_BOT_TOKEN             123456:ABC...  ⚠️ ИЗ @BotFather
+SECRET_KEY                     [сгенерировано]  ⚠️ ВАЖНО: УНИКАЛЬНОЕ
+ALGORITHM                      HS256
+ACCESS_TOKEN_EXPIRE_MINUTES    30
+ALLOWED_ORIGINS                https://domain.vercel.app,https://underpeople.club
+
+════════════════════════════════════════════════════════════════════════════════
+ВАЖНЫЕ МОМЕНТЫ
+════════════════════════════════════════════════════════════════════════════════
+
+⏰ Спящий режим на FREE плане:
+   └─ Сервис "спит" после 15 мин неактивности
+   └─ Первый запрос медленнее на 30 сек
+   └─ Решение: иногда кликать на сервис в дашборде
+
+📊 Лимиты FREE плана:
+   └─ 750 часов в месяц (≈ месячная работа)
+   └─ 512MB RAM
+   └─ 1GB data transfer/месяц
+   └─ БД удаляется после 90 дней неактивности
+
+🔒 Безопасность:
+   └─ ❌ НЕ коммитьте .env с реальными значениями
+   └─ ✅ Используйте .env.example как шаблон
+   └─ ✅ SECRET_KEY генерируйте заново для production
+
+════════════════════════════════════════════════════════════════════════════════
+КОМАНДЫ
+════════════════════════════════════════════════════════════════════════════════
+
+Генерировать SECRET_KEY:
+   
+   Windows (PowerShell):
+   python -c "import secrets; print(secrets.token_hex(32))"
+   
+   macOS/Linux:
+   openssl rand -hex 32
+
+════════════════════════════════════════════════════════════════════════════════
+ЕСЛИ ЧТО-ТО НЕ РАБОТАЕТ
+════════════════════════════════════════════════════════════════════════════════
+
+✗ API возвращает 502/503
+  └─ Смотрите Logs в Render дашборде
+  └─ Обычно проблема с DATABASE_URL или миграциями
+
+✗ PostgreSQL не инициализируется
+  └─ Удалите и создайте заново
+  └─ Render сама создаст таблицы
+
+✗ Redis не подключается
+  └─ Проверьте REDIS_URL без лишних пробелов
+  └─ Redis должен быть в том же регионе
+
+════════════════════════════════════════════════════════════════════════════════
+ГОТОВО?
+════════════════════════════════════════════════════════════════════════════════
+
+📖 Полная инструкция:  docs/RENDER_DEPLOYMENT.md
+✅ Деплой чек-лист:     DEPLOY_CHECKLIST.md
+🎯 Итоговый статус:      DEPLOYMENT_READY.md
+
+════════════════════════════════════════════════════════════════════════════════
