@@ -2,30 +2,36 @@
 
 ## ❌ Ошибки, которые вы получили
 
-### Ошибка 1: `vercel.json` Schema Validation
+### Ошибка 1: `vercel.json` Schema Validation ✅ ИСПРАВЛЕНО
 ```
 The `vercel.json` schema validation failed: should NOT have additional property `nodeVersion`
 ```
 
-### Ошибка 2: 404 NOT_FOUND + Build Completed in 58ms
+### Ошибка 2: 404 NOT_FOUND + Build Completed in 58ms ✅ ИСПРАВЛЕНО
 - Vercel не собрал Next.js проект
 - Просто скопировал файлы, не нашёл что запускать
 - Выдал пустую страницу
+
+### Ошибка 3: No Next.js version detected ✅ ИСПРАВЛЕНО
+```
+Error: No Next.js version detected. Make sure your package.json has "next" in either "dependencies"
+```
+- Root Directory был неправильно указан
+- `outputDirectory` был неправильно установлен
 
 ---
 
 ## ✅ Что исправлено
 
-### 1️⃣ Удален `nodeVersion` из `frontend/vercel.json`
+### 1️⃣ Исправлен `frontend/vercel.json`
 
 **Было:**
 ```json
 {
   "buildCommand": "npm run build",
-  "outputDirectory": ".next/standalone",
+  "outputDirectory": ".next/standalone",  ❌ НЕПРАВИЛЬНО
   "framework": "nextjs",
-  "nodeVersion": "18.x",  ❌ УДАЛЕНО
-  "env": [...]
+  "nodeVersion": "18.x"  ❌ УДАЛЕНО
 }
 ```
 
@@ -33,15 +39,42 @@ The `vercel.json` schema validation failed: should NOT have additional property 
 ```json
 {
   "buildCommand": "npm run build",
-  "outputDirectory": ".next/standalone",
-  "framework": "nextjs",
-  "env": [...]
+  "outputDirectory": ".next",  ✅ ПРАВИЛЬНО
+  "framework": "nextjs"
 }
 ```
 
-### 2️⃣ Создан корректный `vercel.json` в корне проекта
+### 2️⃣ Исправлен корневой `vercel.json`
 
-Указывает Vercel что фронтенд находится в папке `frontend`.
+**Было:**
+```json
+{
+  "projects": [
+    {
+      "src": "frontend",
+      "use": "@vercel/static-build",  ❌ НЕПРАВИЛЬНО для Next.js!
+      "config": { "distDir": ".next/standalone" }
+    }
+  ],
+  "outputDirectory": "frontend/.next/standalone",  ❌ НЕПРАВИЛЬНО
+  "buildCommand": "npm run build"
+}
+```
+
+**Стало:**
+```json
+{
+  "buildCommand": "cd frontend && npm run build",  ✅ ПРАВИЛЬНО
+  "outputDirectory": "frontend/.next",  ✅ ПРАВИЛЬНО
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://api.underpeople.club/api/:path*"
+    }
+  ]
+}
+```
 
 ---
 

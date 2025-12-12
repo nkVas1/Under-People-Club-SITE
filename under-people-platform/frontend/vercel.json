@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": ".next/standalone",
+  "outputDirectory": ".next",
   "framework": "nextjs",
   "env": [
     {

@@ -1,15 +1,6 @@
 {
-  "projects": [
-    {
-      "src": "frontend",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": ".next/standalone"
-      }
-    }
-  ],
-  "buildCommand": "npm run build",
-  "outputDirectory": "frontend/.next/standalone",
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/.next",
   "framework": "nextjs",
   "rewrites": [
     {
