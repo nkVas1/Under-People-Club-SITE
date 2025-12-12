@@ -12,7 +12,7 @@ const SECTIONS = [
 
 export default function ColumnNav({ show }: { show: boolean }) {
   const columnsRef = useRef<(HTMLDivElement | null)[]>([])
-  const [activeSection, setActiveSection] = useState<number | null>(null)
+  const [, setActiveSection] = useState<number | null>(null)
 
   useEffect(() => {
     if (show) {
