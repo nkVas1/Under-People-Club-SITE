@@ -54,8 +54,9 @@ export default function ShelterProfile() {
       }, 2000);
 
       return () => clearTimeout(demoLoginTimer);
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, [isAuthenticated]);
 
   // Анимация появления
