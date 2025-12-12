@@ -1,9 +1,0 @@
-{
-  "buildCommand": "npm install --legacy-peer-deps --include=dev && npm run build",
-  "outputDirectory": ".next",
-  "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://api.underpeople.club",
-    "NEXT_PUBLIC_BOT_NAME": "under_people_bot"
-  }
-}

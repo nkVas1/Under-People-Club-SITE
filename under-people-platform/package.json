@@ -1,15 +1,19 @@
 {
-  "name": "under-people-frontend",
-  "version": "0.1.0",
+  "name": "under-people-platform",
+  "version": "1.0.0",
   "description": "Under People Club - Cyberpunk Community Platform",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm install --legacy-peer-deps && npm run build",
+    "start": "cd frontend && npm run start",
     "lint": "next lint",
     "export": "next export"
   },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
