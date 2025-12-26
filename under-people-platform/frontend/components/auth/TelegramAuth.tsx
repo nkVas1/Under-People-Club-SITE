@@ -56,7 +56,7 @@ export default function TelegramAuth() {
     if (containerRef.current && !containerRef.current.hasChildNodes()) {
       const script = document.createElement('script');
       script.src = "https://telegram.org/js/telegram-widget.js?22";
-      script.setAttribute('data-telegram-login', 'upc_world_bot'); // ИМЯ ВАШЕГО БОТА
+      script.setAttribute('data-telegram-login', 'UPCworld_bot'); // ИМЯ ВАШЕГО БОТА
       script.setAttribute('data-size', 'large');
       script.setAttribute('data-radius', '0');
       script.setAttribute('data-request-access', 'write');
