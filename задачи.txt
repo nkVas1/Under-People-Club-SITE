@@ -338,6 +338,147 @@ https://github.com/nkVas1/Under-People-Club-SITE.
 
 
 
+Вот логи деплоя на Vercel: "00:52:25.223 Running build in Washington, D.C., USA (East) – iad1
+00:52:25.226 Build machine configuration: 2 cores, 8 GB
+00:52:25.543 Cloning github.com/nkVas1/Under-People-Club-SITE (Branch: main, Commit: f1056b4)
+00:52:26.796 Warning: Failed to fetch one or more git submodules
+00:52:26.805 Cloning completed: 1.262s
+00:52:27.188 Restored build cache from previous deployment (5rZz3KyMfbZdfbCAtDb8pzCjmqBj)
+00:52:27.834 Running "vercel build"
+00:52:28.251 Vercel CLI 50.1.3
+00:52:28.584 Running "install" command: `npm install --legacy-peer-deps`...
+00:52:35.447 
+00:52:35.448 > under-people-frontend@0.1.0 postinstall
+00:52:35.449 > echo 'Dependencies installed successfully'
+00:52:35.449 
+00:52:35.455 Dependencies installed successfully
+00:52:35.461 
+00:52:35.462 up to date, audited 407 packages in 7s
+00:52:35.462 
+00:52:35.462 153 packages are looking for funding
+00:52:35.462   run `npm fund` for details
+00:52:35.514 
+00:52:35.515 3 high severity vulnerabilities
+00:52:35.515 
+00:52:35.516 To address all issues (including breaking changes), run:
+00:52:35.516   npm audit fix --force
+00:52:35.516 
+00:52:35.516 Run `npm audit` for details.
+00:52:35.526 Detected Next.js version: 14.2.35
+00:52:35.532 Running "npm run build"
+00:52:36.692 
+00:52:36.693 > under-people-frontend@0.1.0 build
+00:52:36.693 > next build
+00:52:36.694 
+00:52:37.376   ▲ Next.js 14.2.35
+00:52:37.376 
+00:52:37.445    Creating an optimized production build ...
+00:52:37.508  ⚠ Found lockfile missing swc dependencies, run next locally to automatically patch
+00:52:40.851 
+00:52:40.851 
+00:52:40.912 Source path: /vercel/path0/under-people-platform/frontend/app/globals.css
+00:52:40.913 Setting up new context...
+00:52:41.032 Finding changed files: 6.338ms
+00:52:41.090 Reading changed files: 56.62ms
+00:52:41.093 Sorting candidates: 2.71ms
+00:52:41.201 Generate rules: 110.42ms
+00:52:41.205 Build stylesheet: 3.095ms
+00:52:41.218 Potential classes:  1708
+00:52:41.219 Active contexts:  1
+00:52:41.262 JIT TOTAL: 408.903ms
+00:52:41.263 
+00:52:41.263 
+00:52:42.439  ✓ Compiled successfully
+00:52:42.441    Linting and checking validity of types ...
+00:52:42.792 
+00:52:42.792    We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.
+00:52:42.792    The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+00:52:42.792 
+00:52:42.792    	- allowJs was set to true
+00:52:42.793    	- noEmit was set to true
+00:52:42.793 
+00:52:47.030    Collecting page data ...
+00:52:47.528    Generating static pages (0/11) ...
+00:52:48.081  ⚠ Unsupported metadata viewport is configured in metadata export in /_not-found. Please move it to viewport export instead.
+00:52:48.082 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.083  ⚠ Unsupported metadata viewport is configured in metadata export in /_not-found. Please move it to viewport export instead.
+00:52:48.087 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.099    Generating static pages (2/11) 
+00:52:48.121  ⚠ Unsupported metadata viewport is configured in metadata export in /arsenal. Please move it to viewport export instead.
+00:52:48.122 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.122  ⚠ Unsupported metadata viewport is configured in metadata export in /arsenal. Please move it to viewport export instead.
+00:52:48.123 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.295  ⚠ Unsupported metadata viewport is configured in metadata export in /auth/callback. Please move it to viewport export instead.
+00:52:48.295 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.295  ⚠ Unsupported metadata viewport is configured in metadata export in /auth/callback. Please move it to viewport export instead.
+00:52:48.297 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.297  ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/auth/callback". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+00:52:48.297     at a (/vercel/path0/under-people-platform/frontend/.next/server/chunks/819.js:1:10537)
+00:52:48.297     at c (/vercel/path0/under-people-platform/frontend/.next/server/chunks/819.js:1:21473)
+00:52:48.297     at l (/vercel/path0/under-people-platform/frontend/.next/server/app/auth/callback/page.js:1:2115)
+00:52:48.297     at nj (/vercel/path0/under-people-platform/frontend/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:46252)
+00:52:48.298     at nM (/vercel/path0/under-people-platform/frontend/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47572)
+00:52:48.298     at nL (/vercel/path0/under-people-platform/frontend/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+00:52:48.298     at nI (/vercel/path0/under-people-platform/frontend/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47011)
+00:52:48.299     at nM (/vercel/path0/under-people-platform/frontend/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:47718)
+00:52:48.299     at nM (/vercel/path0/under-people-platform/frontend/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+00:52:48.302     at nL (/vercel/path0/under-people-platform/frontend/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+00:52:48.302 
+00:52:48.302 Error occurred prerendering page "/auth/callback". Read more: https://nextjs.org/docs/messages/prerender-error
+00:52:48.302 
+00:52:48.302    Generating static pages (5/11) 
+00:52:48.447  ⚠ Unsupported metadata viewport is configured in metadata export in /chronicles. Please move it to viewport export instead.
+00:52:48.447 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.447  ⚠ Unsupported metadata viewport is configured in metadata export in /chronicles. Please move it to viewport export instead.
+00:52:48.447 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.473  ⚠ Unsupported metadata viewport is configured in metadata export in /network. Please move it to viewport export instead.
+00:52:48.473 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.473  ⚠ Unsupported metadata viewport is configured in metadata export in /network. Please move it to viewport export instead.
+00:52:48.473 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.493  ⚠ Unsupported metadata viewport is configured in metadata export in /overseer. Please move it to viewport export instead.
+00:52:48.493 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.493  ⚠ Unsupported metadata viewport is configured in metadata export in /overseer. Please move it to viewport export instead.
+00:52:48.493 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.514    Generating static pages (8/11) 
+00:52:48.541  ⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
+00:52:48.542 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.542  ⚠ Unsupported metadata viewport is configured in metadata export in /. Please move it to viewport export instead.
+00:52:48.543 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.572  ⚠ Unsupported metadata viewport is configured in metadata export in /raid. Please move it to viewport export instead.
+00:52:48.573 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.573  ⚠ Unsupported metadata viewport is configured in metadata export in /raid. Please move it to viewport export instead.
+00:52:48.573 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.601  ⚠ Unsupported metadata viewport is configured in metadata export in /shelter. Please move it to viewport export instead.
+00:52:48.602 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.602  ⚠ Unsupported metadata viewport is configured in metadata export in /shelter. Please move it to viewport export instead.
+00:52:48.602 Read more: https://nextjs.org/docs/app/api-reference/functions/generate-viewport
+00:52:48.619  ✓ Generating static pages (11/11)
+00:52:48.624 
+00:52:48.625 > Export encountered errors on following paths:
+00:52:48.629 	/auth/callback/page: /auth/callback
+00:52:48.659 Error: Command "npm run build" exited with 1" Разберись в чём дело и исправь.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
