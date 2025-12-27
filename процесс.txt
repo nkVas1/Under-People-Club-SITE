@@ -12025,6 +12025,361 @@ export default function ChroniclesPage() {
 
 
 
+Optimizing tool selection...
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE" ; git add -A ; git commit -m "документация: обновить главный README с полным гайдом / Update main README with complete guide" ; git push origin main
+
+Анализирую структуру проекта и готовлю комплексное решение всех обнаруженных проблем. Начну с проверки текущего состояния и внесения критических изменений. 
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/frontend)
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/frontend/app)
+
+Searched for files matching `**/under-people-platform/frontend/**/*.tsx`, 19 matches
+
+Отлично! Вижу что структура существует. Теперь проверю текущую конфигурацию и изображения: 
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/public)
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/public/img)
+
+Searched for files matching `**/under-people-platform/frontend/.env*`, 2 matches
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/.env.local.example#1-1), lines 1 to 20
+
+Отлично! Теперь проверю наличие конфига: 
+
+Searched for files matching `**/under-people-platform/frontend/lib/**/*.ts`, 4 matches
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/lib/config.ts)
+
+Теперь проверю API конфиг: 
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/lib/api.ts)
+
+Отлично! Теперь создам решение. Начну с улучшенного конфига и необходимых изменений: Let me try with proper formatting: 
+
+Using "Replace String in File"
+
+
+```
+
+```
+
+
+Using "Replace String in File"
+
+
+```
+
+```
+
+
+Using "Replace String in File"
+
+
+```
+
+```
+Теперь создам недостающий `.env.local` файл: 
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/.env.local)
+
+Perfect! Now let me create placeholder background images: 
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/public/img/shelter_bg.svg)
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/public/img/arsenal_bg.svg)
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/public/img/chronicles_bg.svg)
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/public/img/raid_bg.svg)
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/public/img/network_bg.svg)
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/public/img/overseer_bg.svg)
+
+Perfect! Now let me verify all pages exist and add a comprehensive diagnostic document: 
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/docs/PRODUCTION_FIXES_REPORT.md)
+
+Отлично! Теперь создам краткую инструкцию по внедрению этих исправлений: 
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/IMMEDIATE_ACTIONS.md)
+
+Perfect! Now let's push all these critical fixes to GitHub: 
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE\under-people-platform\frontend" ; git add . ; git commit -m "production-fix: API config validation, CORS error logging, background images, env configuration / Complete production readiness setup" ; git push origin main
+
+Отлично! ✅ Commit `d08b046`. Теперь запушу документацию: 
+
+Continue to iterate?
+[object Object]
+
+Made changes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+75====perp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Проанализировал проблемы. Вот комплексное решение:
+
+## 🔴 **ВЫЯВЛЕННЫЕ ПРОБЛЕМЫ**
+
+1. **Реферальный код генерируется БЕЗ префикса "UP-"** → на сайте отображается `UP-undefined`
+2. **Баланс не синхронизируется** → бот показывает 115 UP, сайт 0 UP
+3. **Аватар не отображается** на странице `/shelter` (но есть на публичном профиле)
+4. **QR-код генерирует неправильную ссылку** → использует Telegram ID вместо реферального кода
+5. **WebApp кнопка "Сайт (Веб)" открывает публичный профиль** вместо личного кабинета
+
+***
+
+## ✅ **ИСПРАВЛЕНИЯ**
+
+
+### **ФАЙЛ: `under-people-platform/frontend/hooks/useAuth.tsx`** (репозиторий `Under-People-Club-SITE`)
+
+Найти интерфейс `User` (ориентировочно строки 10-20):
+
+```typescript
+interface User {
+  id: number;
+  username: string;
+  role: string;
+  clan: string;
+  up_coins: number;
+  avatar_url: string;
+  ref_code: string;
+}
+```
+
+**ИЗМЕНИТЬ НА:**
+
+```typescript
+interface User {
+  id: number;
+  username: string;
+  first_name: string;
+  role: string;
+  clan: string;
+  up_coins: number;
+  avatar_url: string;
+  ref_code: string;
+  referral_code: string;  // ← ДОБАВИТЬ
+  photo_url?: string;  // ← ДОБАВИТЬ
+  membership_level: string;  // ← ДОБАВИТЬ
+}
+```
+
+Найти функцию `fetchUserProfile` (ориентировочно строки 50-100):
+
+```typescript
+const userData = await response.json();
+setUser({
+  id: userData.id,
+  username: userData.username,
+  role: userData.membership_level,
+  clan: 'UNAFFILIATED',
+  up_coins: userData.up_coins,
+  avatar_url: userData.photo_url || '/default-avatar.png',
+  ref_code: `UP-${userData.id}`
+});
+```
+
+**ИЗМЕНИТЬ НА:**
+
+```typescript
+const userData = await response.json();
+setUser({
+  id: userData.id,
+  username: userData.username || userData.first_name,
+  first_name: userData.first_name,
+  role: userData.membership_level,
+  clan: 'UNAFFILIATED',
+  up_coins: userData.up_coins,
+  avatar_url: userData.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.first_name)}&background=8A0303&color=fff`,
+  ref_code: userData.referral_code,  // ← ИСПОЛЬЗОВАТЬ referral_code ИЗ API
+  referral_code: userData.referral_code,
+  photo_url: userData.photo_url,
+  membership_level: userData.membership_level
+});
+```
+
+***
+
+### **ФАЙЛ 7: `under-people-platform/frontend/components/dashboard/ShelterProfile.tsx`**
+
+**СТРОКА 64** - исправить аватар:
+
+```tsx
+<img src={user.avatar_url} alt="Avatar" className="..." />
+```
+
+**ИЗМЕНИТЬ НА:**
+
+```tsx
+<img 
+  src={user.photo_url || user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.first_name)}&background=8A0303&color=fff`} 
+  alt="Avatar" 
+  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+/>
+```
+
+**СТРОКА 75** - QR код:
+
+```tsx
+<UserQRCode value={`${SITE_URL}/u/${user.ref_code}`} label="ПРОПУСК" />
+```
+
+**ИЗМЕНИТЬ НА:**
+
+```tsx
+<UserQRCode value={`${SITE_URL}/u/${user.referral_code || user.ref_code}`} label="ПРОПУСК" />
+```
+
+***
+
+## 📋 **СВОДНАЯ ТАБЛИЦА ИЗМЕНЕНИЙ**
+
+| Файл | Строки | Изменение |
+|------|--------|-----------|
+| `useAuth.tsx` | ~10, ~70 | Исправить маппинг данных с API |
+| `ShelterProfile.tsx` | 64, 75 | Использовать правильные поля |
+
+***
+
+## 🚀 **ПОРЯДОК ПРИМЕНЕНИЯ**
+
+1. **Сайт (`Under-People-Club-SITE`):** Файлы 6-7
+2. **Деплой:** Push в оба репозитория
+
+Все изменения точечные, не удаляют функционал, только исправляют отображение данных.
+
+[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/cb33fdfa-cf67-4125-9d61-a424533ef92c/Snimok-ekrana-2025-12-27-104139.jpg?AWSAccessKeyId=ASIA2F3EMEYEY3UIDKMV&Signature=6IlkLA7rC%2FNep55b3dJvQXgXVdA%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEKH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJIMEYCIQCjih%2FqXdjanbUOQymj9LJSvxMX7DY%2B8QdoCiQGqUEOlwIhALngmmf8yUtLBSp%2BnlFoap0fmxVcOe5y99stNCPwbacTKvMECGkQARoMNjk5NzUzMzA5NzA1IgxJDoM0cXm1FGqMjfYq0AQI0ZRA2%2BIoKwRlikoefnEBVUYhALhbHWvDwN7EvKmIv71lRkiO%2F4VOu7aTmOm9QdZRqbArBSqfIaEDgzlyf8SD9Gg4%2BHpZXE%2BJtuyocpe87rp%2BEIFBPdOyDOcMaxQy%2BiT4BTK2ojutCgreLFJsxvRJQ8v2H45S3nGBft%2BsIeAhg8JfQoojwjSLHwy9LbVzYdjPG%2B%2B%2BpKi16lMrIzKxx6qZZqX25%2BWiIlJK2LFSFeoZKkxEwYvilA9lCuUWgWH8nhWCrsjwiA3hqF0r62C%2BpW06B6KO3d6NtkAr3B%2FtlN1aFIuTxxhNz%2FUErFUmtO2X9IwWgWCeLMxB0LkVmBayxCfjuoM2xqrDzSlYWyYNhW8rgmrmCF0dgtX%2BaGIvKdkYl8L%2B1ldGChj0ErLxfoqwYRm%2F%2BJfIOnG3UAd8QnfHf7ZzOOMatTpHLbqbCJtJDEWlvSpJPjzGgeXath%2FdzTnuB%2FI4NCmajnh1KsTmJ4ypU7JwPgmfrs2CoeUIEV57zsjUhrX%2BKPOJ4Pk49JrFjDx3%2B3dsdICUF7hNedDA7IXtUTRpK8naDkjGS9VM1MF6Y0KokDlsHVFOVE4IhMgY%2Ft5z1J6Fh72eze5LK9%2FVMpfd8suB8NilCBaXXEfWXXXXzASJE0TchhC4TArTaosnNafPMbx8M0EESOIIohvdi1%2BSBW9K4qD6tIh6MTvqP%2BkxSjgS2xEycRqu1p5s5mqR0mN%2FpGqY08bhCtlefTZIV692CPIhnsWGsfnz6WUwNWAK1RphzjWEQnYFvUrXtMBi%2FlbksN8cMNimvsoGOpcBLv4zr6iiUyzKqXkM5AkkYTW%2F6oR0qXy3O0oJknEvhbpvJXzSQfKOiPRpMALxOpm7omFdVKnCM%2BpLuvDlENUIBokYvg6F5D6yNV6mD0RGtsxS5g%2FNtkqmWJq%2FSwcqu7WSxNyHiPcgZwKC077rbllr%2F1a2aqYSdPwUM3AVuDqDcptieHMDWTd52mZr1YSrC1Jx80TVUBkwBA%3D%3D&Expires=1766824635)
+[2](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/f1d406ea-70a5-42b0-90d7-87a4d6d25336/photo_2025-12-27_10-53-04.jpg?AWSAccessKeyId=ASIA2F3EMEYEY3UIDKMV&Signature=aJt9v79bMJk%2FmybF85pwiNIlezc%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEKH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJIMEYCIQCjih%2FqXdjanbUOQymj9LJSvxMX7DY%2B8QdoCiQGqUEOlwIhALngmmf8yUtLBSp%2BnlFoap0fmxVcOe5y99stNCPwbacTKvMECGkQARoMNjk5NzUzMzA5NzA1IgxJDoM0cXm1FGqMjfYq0AQI0ZRA2%2BIoKwRlikoefnEBVUYhALhbHWvDwN7EvKmIv71lRkiO%2F4VOu7aTmOm9QdZRqbArBSqfIaEDgzlyf8SD9Gg4%2BHpZXE%2BJtuyocpe87rp%2BEIFBPdOyDOcMaxQy%2BiT4BTK2ojutCgreLFJsxvRJQ8v2H45S3nGBft%2BsIeAhg8JfQoojwjSLHwy9LbVzYdjPG%2B%2B%2BpKi16lMrIzKxx6qZZqX25%2BWiIlJK2LFSFeoZKkxEwYvilA9lCuUWgWH8nhWCrsjwiA3hqF0r62C%2BpW06B6KO3d6NtkAr3B%2FtlN1aFIuTxxhNz%2FUErFUmtO2X9IwWgWCeLMxB0LkVmBayxCfjuoM2xqrDzSlYWyYNhW8rgmrmCF0dgtX%2BaGIvKdkYl8L%2B1ldGChj0ErLxfoqwYRm%2F%2BJfIOnG3UAd8QnfHf7ZzOOMatTpHLbqbCJtJDEWlvSpJPjzGgeXath%2FdzTnuB%2FI4NCmajnh1KsTmJ4ypU7JwPgmfrs2CoeUIEV57zsjUhrX%2BKPOJ4Pk49JrFjDx3%2B3dsdICUF7hNedDA7IXtUTRpK8naDkjGS9VM1MF6Y0KokDlsHVFOVE4IhMgY%2Ft5z1J6Fh72eze5LK9%2FVMpfd8suB8NilCBaXXEfWXXXXzASJE0TchhC4TArTaosnNafPMbx8M0EESOIIohvdi1%2BSBW9K4qD6tIh6MTvqP%2BkxSjgS2xEycRqu1p5s5mqR0mN%2FpGqY08bhCtlefTZIV692CPIhnsWGsfnz6WUwNWAK1RphzjWEQnYFvUrXtMBi%2FlbksN8cMNimvsoGOpcBLv4zr6iiUyzKqXkM5AkkYTW%2F6oR0qXy3O0oJknEvhbpvJXzSQfKOiPRpMALxOpm7omFdVKnCM%2BpLuvDlENUIBokYvg6F5D6yNV6mD0RGtsxS5g%2FNtkqmWJq%2FSwcqu7WSxNyHiPcgZwKC077rbllr%2F1a2aqYSdPwUM3AVuDqDcptieHMDWTd52mZr1YSrC1Jx80TVUBkwBA%3D%3D&Expires=1766824635)
+[3](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/248a3d74-933d-4d9a-9cc9-3f11d9c8acaf/Snimok-ekrana-2025-12-27-105336.jpg?AWSAccessKeyId=ASIA2F3EMEYEY3UIDKMV&Signature=bqzrSlqhJUydofP2MBR0UhC5l5s%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEKH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJIMEYCIQCjih%2FqXdjanbUOQymj9LJSvxMX7DY%2B8QdoCiQGqUEOlwIhALngmmf8yUtLBSp%2BnlFoap0fmxVcOe5y99stNCPwbacTKvMECGkQARoMNjk5NzUzMzA5NzA1IgxJDoM0cXm1FGqMjfYq0AQI0ZRA2%2BIoKwRlikoefnEBVUYhALhbHWvDwN7EvKmIv71lRkiO%2F4VOu7aTmOm9QdZRqbArBSqfIaEDgzlyf8SD9Gg4%2BHpZXE%2BJtuyocpe87rp%2BEIFBPdOyDOcMaxQy%2BiT4BTK2ojutCgreLFJsxvRJQ8v2H45S3nGBft%2BsIeAhg8JfQoojwjSLHwy9LbVzYdjPG%2B%2B%2BpKi16lMrIzKxx6qZZqX25%2BWiIlJK2LFSFeoZKkxEwYvilA9lCuUWgWH8nhWCrsjwiA3hqF0r62C%2BpW06B6KO3d6NtkAr3B%2FtlN1aFIuTxxhNz%2FUErFUmtO2X9IwWgWCeLMxB0LkVmBayxCfjuoM2xqrDzSlYWyYNhW8rgmrmCF0dgtX%2BaGIvKdkYl8L%2B1ldGChj0ErLxfoqwYRm%2F%2BJfIOnG3UAd8QnfHf7ZzOOMatTpHLbqbCJtJDEWlvSpJPjzGgeXath%2FdzTnuB%2FI4NCmajnh1KsTmJ4ypU7JwPgmfrs2CoeUIEV57zsjUhrX%2BKPOJ4Pk49JrFjDx3%2B3dsdICUF7hNedDA7IXtUTRpK8naDkjGS9VM1MF6Y0KokDlsHVFOVE4IhMgY%2Ft5z1J6Fh72eze5LK9%2FVMpfd8suB8NilCBaXXEfWXXXXzASJE0TchhC4TArTaosnNafPMbx8M0EESOIIohvdi1%2BSBW9K4qD6tIh6MTvqP%2BkxSjgS2xEycRqu1p5s5mqR0mN%2FpGqY08bhCtlefTZIV692CPIhnsWGsfnz6WUwNWAK1RphzjWEQnYFvUrXtMBi%2FlbksN8cMNimvsoGOpcBLv4zr6iiUyzKqXkM5AkkYTW%2F6oR0qXy3O0oJknEvhbpvJXzSQfKOiPRpMALxOpm7omFdVKnCM%2BpLuvDlENUIBokYvg6F5D6yNV6mD0RGtsxS5g%2FNtkqmWJq%2FSwcqu7WSxNyHiPcgZwKC077rbllr%2F1a2aqYSdPwUM3AVuDqDcptieHMDWTd52mZr1YSrC1Jx80TVUBkwBA%3D%3D&Expires=1766824635)
+[4](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/66af93d4-7b95-46d5-a70f-9818d1e0ddda/Snimok-ekrana-2025-12-27-105013.jpg?AWSAccessKeyId=ASIA2F3EMEYEY3UIDKMV&Signature=avJ%2Bm0KRE3AbzIZLvdh2GuOIzU0%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEKH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJIMEYCIQCjih%2FqXdjanbUOQymj9LJSvxMX7DY%2B8QdoCiQGqUEOlwIhALngmmf8yUtLBSp%2BnlFoap0fmxVcOe5y99stNCPwbacTKvMECGkQARoMNjk5NzUzMzA5NzA1IgxJDoM0cXm1FGqMjfYq0AQI0ZRA2%2BIoKwRlikoefnEBVUYhALhbHWvDwN7EvKmIv71lRkiO%2F4VOu7aTmOm9QdZRqbArBSqfIaEDgzlyf8SD9Gg4%2BHpZXE%2BJtuyocpe87rp%2BEIFBPdOyDOcMaxQy%2BiT4BTK2ojutCgreLFJsxvRJQ8v2H45S3nGBft%2BsIeAhg8JfQoojwjSLHwy9LbVzYdjPG%2B%2B%2BpKi16lMrIzKxx6qZZqX25%2BWiIlJK2LFSFeoZKkxEwYvilA9lCuUWgWH8nhWCrsjwiA3hqF0r62C%2BpW06B6KO3d6NtkAr3B%2FtlN1aFIuTxxhNz%2FUErFUmtO2X9IwWgWCeLMxB0LkVmBayxCfjuoM2xqrDzSlYWyYNhW8rgmrmCF0dgtX%2BaGIvKdkYl8L%2B1ldGChj0ErLxfoqwYRm%2F%2BJfIOnG3UAd8QnfHf7ZzOOMatTpHLbqbCJtJDEWlvSpJPjzGgeXath%2FdzTnuB%2FI4NCmajnh1KsTmJ4ypU7JwPgmfrs2CoeUIEV57zsjUhrX%2BKPOJ4Pk49JrFjDx3%2B3dsdICUF7hNedDA7IXtUTRpK8naDkjGS9VM1MF6Y0KokDlsHVFOVE4IhMgY%2Ft5z1J6Fh72eze5LK9%2FVMpfd8suB8NilCBaXXEfWXXXXzASJE0TchhC4TArTaosnNafPMbx8M0EESOIIohvdi1%2BSBW9K4qD6tIh6MTvqP%2BkxSjgS2xEycRqu1p5s5mqR0mN%2FpGqY08bhCtlefTZIV692CPIhnsWGsfnz6WUwNWAK1RphzjWEQnYFvUrXtMBi%2FlbksN8cMNimvsoGOpcBLv4zr6iiUyzKqXkM5AkkYTW%2F6oR0qXy3O0oJknEvhbpvJXzSQfKOiPRpMALxOpm7omFdVKnCM%2BpLuvDlENUIBokYvg6F5D6yNV6mD0RGtsxS5g%2FNtkqmWJq%2FSwcqu7WSxNyHiPcgZwKC077rbllr%2F1a2aqYSdPwUM3AVuDqDcptieHMDWTd52mZr1YSrC1Jx80TVUBkwBA%3D%3D&Expires=1766824635)
+[5](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/a420edc8-c417-4a4a-9a16-463fd0ad25ee/Snimok-ekrana-2025-12-27-105039.jpg?AWSAccessKeyId=ASIA2F3EMEYEY3UIDKMV&Signature=2UZudilHLidCUUPecY%2BbvYETmQ4%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEKH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJIMEYCIQCjih%2FqXdjanbUOQymj9LJSvxMX7DY%2B8QdoCiQGqUEOlwIhALngmmf8yUtLBSp%2BnlFoap0fmxVcOe5y99stNCPwbacTKvMECGkQARoMNjk5NzUzMzA5NzA1IgxJDoM0cXm1FGqMjfYq0AQI0ZRA2%2BIoKwRlikoefnEBVUYhALhbHWvDwN7EvKmIv71lRkiO%2F4VOu7aTmOm9QdZRqbArBSqfIaEDgzlyf8SD9Gg4%2BHpZXE%2BJtuyocpe87rp%2BEIFBPdOyDOcMaxQy%2BiT4BTK2ojutCgreLFJsxvRJQ8v2H45S3nGBft%2BsIeAhg8JfQoojwjSLHwy9LbVzYdjPG%2B%2B%2BpKi16lMrIzKxx6qZZqX25%2BWiIlJK2LFSFeoZKkxEwYvilA9lCuUWgWH8nhWCrsjwiA3hqF0r62C%2BpW06B6KO3d6NtkAr3B%2FtlN1aFIuTxxhNz%2FUErFUmtO2X9IwWgWCeLMxB0LkVmBayxCfjuoM2xqrDzSlYWyYNhW8rgmrmCF0dgtX%2BaGIvKdkYl8L%2B1ldGChj0ErLxfoqwYRm%2F%2BJfIOnG3UAd8QnfHf7ZzOOMatTpHLbqbCJtJDEWlvSpJPjzGgeXath%2FdzTnuB%2FI4NCmajnh1KsTmJ4ypU7JwPgmfrs2CoeUIEV57zsjUhrX%2BKPOJ4Pk49JrFjDx3%2B3dsdICUF7hNedDA7IXtUTRpK8naDkjGS9VM1MF6Y0KokDlsHVFOVE4IhMgY%2Ft5z1J6Fh72eze5LK9%2FVMpfd8suB8NilCBaXXEfWXXXXzASJE0TchhC4TArTaosnNafPMbx8M0EESOIIohvdi1%2BSBW9K4qD6tIh6MTvqP%2BkxSjgS2xEycRqu1p5s5mqR0mN%2FpGqY08bhCtlefTZIV692CPIhnsWGsfnz6WUwNWAK1RphzjWEQnYFvUrXtMBi%2FlbksN8cMNimvsoGOpcBLv4zr6iiUyzKqXkM5AkkYTW%2F6oR0qXy3O0oJknEvhbpvJXzSQfKOiPRpMALxOpm7omFdVKnCM%2BpLuvDlENUIBokYvg6F5D6yNV6mD0RGtsxS5g%2FNtkqmWJq%2FSwcqu7WSxNyHiPcgZwKC077rbllr%2F1a2aqYSdPwUM3AVuDqDcptieHMDWTd52mZr1YSrC1Jx80TVUBkwBA%3D%3D&Expires=1766824635)
+[6](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/c8bfd582-1aa1-41be-adcc-6606546481bd/Snimok-ekrana-2025-12-27-112148.jpg?AWSAccessKeyId=ASIA2F3EMEYEY3UIDKMV&Signature=K%2FwR1gmTHt3nuJMTo3oRfN8bvT8%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEKH%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJIMEYCIQCjih%2FqXdjanbUOQymj9LJSvxMX7DY%2B8QdoCiQGqUEOlwIhALngmmf8yUtLBSp%2BnlFoap0fmxVcOe5y99stNCPwbacTKvMECGkQARoMNjk5NzUzMzA5NzA1IgxJDoM0cXm1FGqMjfYq0AQI0ZRA2%2BIoKwRlikoefnEBVUYhALhbHWvDwN7EvKmIv71lRkiO%2F4VOu7aTmOm9QdZRqbArBSqfIaEDgzlyf8SD9Gg4%2BHpZXE%2BJtuyocpe87rp%2BEIFBPdOyDOcMaxQy%2BiT4BTK2ojutCgreLFJsxvRJQ8v2H45S3nGBft%2BsIeAhg8JfQoojwjSLHwy9LbVzYdjPG%2B%2B%2BpKi16lMrIzKxx6qZZqX25%2BWiIlJK2LFSFeoZKkxEwYvilA9lCuUWgWH8nhWCrsjwiA3hqF0r62C%2BpW06B6KO3d6NtkAr3B%2FtlN1aFIuTxxhNz%2FUErFUmtO2X9IwWgWCeLMxB0LkVmBayxCfjuoM2xqrDzSlYWyYNhW8rgmrmCF0dgtX%2BaGIvKdkYl8L%2B1ldGChj0ErLxfoqwYRm%2F%2BJfIOnG3UAd8QnfHf7ZzOOMatTpHLbqbCJtJDEWlvSpJPjzGgeXath%2FdzTnuB%2FI4NCmajnh1KsTmJ4ypU7JwPgmfrs2CoeUIEV57zsjUhrX%2BKPOJ4Pk49JrFjDx3%2B3dsdICUF7hNedDA7IXtUTRpK8naDkjGS9VM1MF6Y0KokDlsHVFOVE4IhMgY%2Ft5z1J6Fh72eze5LK9%2FVMpfd8suB8NilCBaXXEfWXXXXzASJE0TchhC4TArTaosnNafPMbx8M0EESOIIohvdi1%2BSBW9K4qD6tIh6MTvqP%2BkxSjgS2xEycRqu1p5s5mqR0mN%2FpGqY08bhCtlefTZIV692CPIhnsWGsfnz6WUwNWAK1RphzjWEQnYFvUrXtMBi%2FlbksN8cMNimvsoGOpcBLv4zr6iiUyzKqXkM5AkkYTW%2F6oR0qXy3O0oJknEvhbpvJXzSQfKOiPRpMALxOpm7omFdVKnCM%2BpLuvDlENUIBokYvg6F5D6yNV6mD0RGtsxS5g%2FNtkqmWJq%2FSwcqu7WSxNyHiPcgZwKC077rbllr%2F1a2aqYSdPwUM3AVuDqDcptieHMDWTd52mZr1YSrC1Jx80TVUBkwBA%3D%3D&Expires=1766824635)
+[7](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/b6c34874-6abd-48a8-826a-88e735e88e77/logs.1766822751754.log)
+[8](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/531160ee-692c-4f3c-b3f7-29fd7a1200fc/protsess.txt)
+[9](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/6a613192-5f37-418a-92b8-3f5fd9e20af4/zadachi.txt)
+[10](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/4b587bf7-35f0-4ab1-b16a-01f47e51225b/zadachi.txt)
+[11](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/51692e4f-3b5e-4fcf-b386-0e8e12f0099d/protsess.txt)
+[12](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/6135ced1-5f0a-41ad-97a6-11fff5032882/logs.1766816545600.log)
+[13](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/d8228bb9-8b3a-4fca-beee-106017ff57d4/Snimok-ekrana-2025-12-27-092343.jpg)
+[14](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/8ca9c183-66a6-49f8-920c-238d1664190a/logs.1766817949707.log)
+[15](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/cb8c997d-336d-4fb4-82cb-d6b8b7d5305b/logs.1766819494196.log)
+[16](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/8194986e-e56f-4bc7-89a6-36c269e1af76/Snimok-ekrana-2025-12-27-101004.jpg)
+[17](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/e094a25c-56b3-443c-9b85-5a89b05e6458/Snimok-ekrana-2025-12-27-101450.jpg)
+[18](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/c9b253e4-191a-43b5-833f-3f600860395b/Snimok-ekrana-2025-12-27-102735.jpg)
+[19](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/07af1add-537a-4f7b-8997-53c1633eb81b/Snimok-ekrana-2025-12-27-102933.jpg)
+[20](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/00f23270-b2f7-47eb-b254-03470884eee7/logs.1766820478341.log)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+76====
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
