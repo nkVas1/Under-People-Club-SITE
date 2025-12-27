@@ -550,6 +550,129 @@ tsx
 
 
 
+Вот логи сайта через DevTools при попытке авторизоваться: "
+﻿
+page-4943b778a8e656fe.js:1 🔐 [AUTH CALLBACK] Обмениваем код на токен: e6681b63-91ec-407c-a924-b8119dbb7a46
+callback?code=e6681b…a924-b8119dbb7a46:1 Access to fetch at 'https://upcworldbot-production.up.railway.app/api/auth/callback' from origin 'https://under-people-club.vercel.app' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+upcworldbot-producti…api/auth/callback:1  Failed to load resource: net::ERR_FAILED
+117-0b7109350d7ff324.js:1 ❌ [AUTH CALLBACK ERROR] TypeError: Failed to fetch
+    at page-4943b778a8e656fe.js:1:819
+    at page-4943b778a8e656fe.js:1:1458
+    at aW (fd9d1056-95ca10df51c0fb8d.js:1:73241)
+    at oe (fd9d1056-95ca10df51c0fb8d.js:1:84682)
+    at e (fd9d1056-95ca10df51c0fb8d.js:1:85824)
+    at ol (fd9d1056-95ca10df51c0fb8d.js:1:86136)
+    at or (fd9d1056-95ca10df51c0fb8d.js:1:85204)
+    at ol (fd9d1056-95ca10df51c0fb8d.js:1:86265)
+    at or (fd9d1056-95ca10df51c0fb8d.js:1:85204)
+    at ol (fd9d1056-95ca10df51c0fb8d.js:1:85300)
+/img/overseer_bg.jpg:1  GET https://under-people-club.vercel.app/img/overseer_bg.jpg 404 (Not Found)
+arsenal_bg.jpg:1  GET https://under-people-club.vercel.app/img/arsenal_bg.jpg 404 (Not Found)
+chronicles_bg.jpg:1  GET https://under-people-club.vercel.app/img/chronicles_bg.jpg 404 (Not Found)
+raid_bg.jpg:1  GET https://under-people-club.vercel.app/img/raid_bg.jpg 404 (Not Found)
+network_bg.jpg:1  GET https://under-people-club.vercel.app/img/network_bg.jpg 404 (Not Found)
+/img/bunker_bg.jpg:1  GET https://under-people-club.vercel.app/img/bunker_bg.jpg 404 (Not Found)" или вот это "🔐 [AUTH CALLBACK] Starting auth flow
+page-2303d832f245bfeb.js:1 Code: 54470542-ac29-42ed-876f-8c950a457f68
+page-2303d832f245bfeb.js:1 API URL: https://upcworldbot-production.up.railway.app
+callback?code=54470542-ac29-42ed-876f-8c950a457f68:1 Access to fetch at 'https://upcworldbot-production.up.railway.app/api/auth/callback' from origin 'https://under-people-club.vercel.app' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+upcworldbot-production.up.railway.app/api/auth/callback:1  Failed to load resource: net::ERR_FAILED
+117-0b7109350d7ff324.js:1 ❌ [AUTH CALLBACK ERROR] TypeError: Failed to fetch
+    at page-2303d832f245bfeb.js:1:854
+    at aW (fd9d1056-95ca10df51c0fb8d.js:1:73241)
+    at oe (fd9d1056-95ca10df51c0fb8d.js:1:84682)
+    at e (fd9d1056-95ca10df51c0fb8d.js:1:85824)
+    at ol (fd9d1056-95ca10df51c0fb8d.js:1:86136)
+    at or (fd9d1056-95ca10df51c0fb8d.js:1:85204)
+    at ol (fd9d1056-95ca10df51c0fb8d.js:1:86265)
+    at or (fd9d1056-95ca10df51c0fb8d.js:1:85204)
+    at ol (fd9d1056-95ca10df51c0fb8d.js:1:85300)
+    at or (fd9d1056-95ca10df51c0fb8d.js:1:85204)". Вот HTTP Logs из Railway: "{
+  "requestId": "0WBdyenzSkKC7NIWrJsmnA",
+  "timestamp": "2025-12-27T05:21:33.724656759Z",
+  "method": "OPTIONS",
+  "path": "/api/auth/callback",
+  "host": "upcworldbot-production.up.railway.app",
+  "httpStatus": 502,
+  "upstreamProto": "",
+  "downstreamProto": "HTTP/2.0",
+  "responseDetails": "Retried single replica",
+  "totalDuration": 417,
+  "upstreamAddress": "",
+  "clientUa": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+  "upstreamRqDuration": 276,
+  "txBytes": 109,
+  "rxBytes": 665,
+  "srcIp": "193.29.139.140",
+  "edgeRegion": "europe-west4-drams3a",
+  "upstreamErrors": "[{\"deploymentInstanceID\":\"dacf151b-b405-433a-b102-6db72cf0b516\",\"duration\":92,\"error\":\"connection refused\"},{\"deploymentInstanceID\":\"dacf151b-b405-433a-b102-6db72cf0b516\",\"duration\":92,\"error\":\"connection refused\"},{\"deploymentInstanceID\":\"dacf151b-b405-433a-b102-6db72cf0b516\",\"duration\":92,\"error\":\"connection refused\"}]"
+} ; {
+  "requestId": "s4KBEWn1QQCqs_I0YqdHTg",
+  "timestamp": "2025-12-27T05:24:36.962977872Z",
+  "method": "GET",
+  "path": "/",
+  "host": "upcworldbot-production.up.railway.app",
+  "httpStatus": 502,
+  "upstreamProto": "",
+  "downstreamProto": "HTTP/2.0",
+  "responseDetails": "Retried single replica",
+  "totalDuration": 416,
+  "upstreamAddress": "",
+  "clientUa": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+  "upstreamRqDuration": 276,
+  "txBytes": 4682,
+  "rxBytes": 795,
+  "srcIp": "193.29.139.140",
+  "edgeRegion": "europe-west4-drams3a",
+  "upstreamErrors": "[{\"deploymentInstanceID\":\"dacf151b-b405-433a-b102-6db72cf0b516\",\"duration\":91,\"error\":\"connection refused\"},{\"deploymentInstanceID\":\"dacf151b-b405-433a-b102-6db72cf0b516\",\"duration\":91,\"error\":\"connection refused\"},{\"deploymentInstanceID\":\"dacf151b-b405-433a-b102-6db72cf0b516\",\"duration\":94,\"error\":\"connection refused\"}]"
+} ; {
+  "requestId": "eA0wtFeIRDuQP5JPYqdHTg",
+  "timestamp": "2025-12-27T05:24:37.378105659Z",
+  "method": "GET",
+  "path": "/favicon.ico",
+  "host": "upcworldbot-production.up.railway.app",
+  "httpStatus": 502,
+  "upstreamProto": "",
+  "downstreamProto": "HTTP/2.0",
+  "responseDetails": "Retried single replica",
+  "totalDuration": 274,
+  "upstreamAddress": "",
+  "clientUa": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+  "upstreamRqDuration": 273,
+  "txBytes": 109,
+  "rxBytes": 739,
+  "srcIp": "193.29.139.140",
+  "edgeRegion": "europe-west4-drams3a",
+  "upstreamErrors": "[{\"deploymentInstanceID\":\"dacf151b-b405-433a-b102-6db72cf0b516\",\"duration\":91,\"error\":\"connection refused\"},{\"deploymentInstanceID\":\"dacf151b-b405-433a-b102-6db72cf0b516\",\"duration\":91,\"error\":\"connection refused\"},{\"deploymentInstanceID\":\"dacf151b-b405-433a-b102-6db72cf0b516\",\"duration\":91,\"error\":\"connection refused\"}]"
+}". Похоже проблема в самом API URL https://upcworldbot-production.up.railway.app/, так ли это? Разберись и полноценно исправь. Прикрепляю файл со свежими логами бота с Railway. Прикрепляю файлы со всем процессом разработки Телеграмм бота и сайта. Изучи их подробно для наилучшего понимания ситуации и проекта. Подробно изучи текущее состояние проекта и ключевых файлов
+https://github.com/nkVas1/Under-People-Club-SITE и https://github.com/nkVas1/upc_world_bot.
+Опиши, какие точечные изменения, в каких файлах и на каких строках кода я должен внести. Напиши всё полностью от начала и до конца, не обрывая ответ на полуслове.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
