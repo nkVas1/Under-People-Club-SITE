@@ -81,15 +81,15 @@ export default function ShelterProfile() {
         </div>
 
         <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-1">{user?.username || 'MEMBER'}</h2>
-        <p className="text-[#8A0303] font-mono text-sm tracking-[0.2em] mb-8">{user?.role?.toUpperCase() || 'MEMBER'} // {user.clan || 'UNAFFILIATED'}</p>
+        <p className="text-[#8A0303] font-mono text-sm tracking-[0.2em] mb-8">{user?.membership_level?.toUpperCase() || user?.role?.toUpperCase() || 'GUEST'} // {user.clan || 'UNAFFILIATED'}</p>
 
         {/* QR Код */}
-        <UserQRCode value={`${SITE_URL}/u/${user?.referral_code || user?.ref_code || 'guest'}`} label="ПРОПУСК" />
+        <UserQRCode value={`${SITE_URL}/u/${user?.referral_code || 'guest'}`} label="ПРОПУСК" />
         
         <div className="mt-8 w-full border-t border-[#222] pt-4 text-center">
           <p className="text-zinc-600 text-[10px] font-mono mb-1">КОД РЕФЕРАЛА</p>
           <p className="text-xl text-white font-mono tracking-widest select-all cursor-pointer hover:text-[#8A0303] transition-colors">
-            {user?.ref_code || user?.referral_code || 'UP-GUEST'}
+            UP-{user?.referral_code || user?.ref_code || 'GUEST'}
           </p>
         </div>
       </div>
