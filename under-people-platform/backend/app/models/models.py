@@ -1,4 +1,6 @@
 import uuid
+import secrets
+import string
 from datetime import datetime
 from enum import Enum as PyEnum
 from sqlalchemy import Column, String, Integer, DateTime, Boolean, ForeignKey, Enum, Float, Text
@@ -45,6 +47,18 @@ class User(Base):
     )
     orders = relationship("Order", back_populates="user")
     cards = relationship("UserCard", back_populates="user")
+    
+    @staticmethod
+    def generate_referral_code() -> str:
+        """Генерирует уникальный referral_code в формате UP-XXXXXX"""
+        chars = string.ascii_uppercase + string.digits
+        code = ''.join(secrets.choice(chars) for _ in range(6))
+        return f"UP-{code}"
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if not self.referral_code:
+            self.referral_code = self.generate_referral_code()
 
 
 class Rarity(str, PyEnum):

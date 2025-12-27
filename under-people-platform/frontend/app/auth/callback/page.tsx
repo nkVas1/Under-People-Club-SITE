@@ -19,26 +19,38 @@ function AuthCallbackContent() {
     }
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const telegramId = typeof window !== 'undefined' 
+      ? (window as any).Telegram?.WebApp?.initData?.user?.id 
+      : null;
+    
     if (!apiUrl) {
       setStatus('ERROR: API URL NOT CONFIGURED');
       console.error('❌ [AUTH] NEXT_PUBLIC_API_URL is not set');
       return;
     }
 
+    if (!telegramId) {
+      setStatus('ERROR: TELEGRAM ID NOT AVAILABLE');
+      console.error('❌ [AUTH] Telegram ID is not available');
+      return;
+    }
+
     console.log('🔐 [AUTH CALLBACK] Starting auth flow');
     console.log('Code:', code);
+    console.log('Telegram ID:', telegramId);
     console.log('API URL:', apiUrl);
 
     setStatus('CONNECTING TO NEURAL NETWORK...');
 
-    // Делаем запрос на обмен кода
-    fetch(`${apiUrl}/api/auth/callback`, {
+    // Делаем запрос на обмен кода через query параметры
+    const callbackUrl = `${apiUrl}/api/auth/callback?code=${encodeURIComponent(code)}&telegram_id=${telegramId}`;
+    
+    fetch(callbackUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify({ code }),
     })
       .then(async (res) => {
         console.log('📨 [AUTH] Response status:', res.status);
@@ -55,30 +67,30 @@ function AuthCallbackContent() {
         return data;
       })
       .then((data) => {
-        if (data.access_token && data.user) {
+        if (data.token && data.user) {
           setStatus('ACCESS GRANTED. REDIRECTING...');
           console.log('✅ [AUTH] Token received, logging in user:', data.user);
 
           // Сохраняем данные пользователя
           login({
-            id: data.user.id || data.user.telegram_id.toString(),
-            username: data.user.username || data.user.first_name,
-            first_name: data.user.first_name,
-            role: data.user.membership_level,
-            clan: 'UNAFFILIATED',
+            id: data.user.id,
+            username: data.user.username || `User_${data.user.telegram_id}`,
+            first_name: data.user.username,
+            role: data.user.role || 'RANGER',
+            clan: data.user.clan_name || 'UNAFFILIATED',
             up_coins: data.user.up_coins || 0,
-            avatar_url: data.user.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.first_name)}&background=8A0303&color=fff`,
-            ref_code: data.user.referral_code,  // ← ИСПОЛЬЗОВАТЬ referral_code ИЗ API
+            avatar_url: data.user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.username || 'User')}&background=8A0303&color=fff`,
+            ref_code: data.user.referral_code,
             referral_code: data.user.referral_code,
-            photo_url: data.user.photo_url,
-            membership_level: data.user.membership_level,
+            photo_url: data.user.avatar_url,
+            membership_level: data.user.role,
             telegram_id: data.user.telegram_id,
-            token: data.access_token,
+            token: data.token,
             is_verified: true,
           });
 
           // Сохраняем токен в localStorage для API запросов
-          localStorage.setItem('auth_token', data.access_token);
+          localStorage.setItem('auth_token', data.token);
 
           // Небольшая задержка для красоты
           setTimeout(() => {

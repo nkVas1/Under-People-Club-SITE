@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
-from app.routers import auth, users, products
+from app.routers import auth, users, products, events
 
 # Создаем таблицы
 Base.metadata.create_all(bind=engine)
@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(products.router, prefix="/api")
+app.include_router(events.router, prefix="/api")
 
 @app.get("/health")
 async def health_check():
