@@ -12534,6 +12534,390 @@ Made changes.
 
 
 
+Searched for text `web button or inline keyboard` (`**/under-people-platform/backend/app/**/*.py`), no results
+
+Searched codebase for "QR code button web app profile link referral", 23 results
+
+Отлично, я нашел информацию. Нужно исправить QR код в ShelterProfile. Теперь добавлю исправление для QR кода: 
+
+Using "Replace String in File"
+
+
+```
+
+```
+Теперь нужно найти синхронизацию баланса. Давайте посмотрим, как баланс обновляется: 
+
+Searched for text `up_coins balance sync` (`**/*.tsx,**/*.ts`), no results
+
+Searched for text `setInterval fetch update` (`**/*.tsx,**/*.ts`), no results
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/app/auth/callback/page.tsx#100-100), lines 100 to 151
+
+Теперь добавлю механизм синхронизации баланса. Обновлю authStore для периодического обновления баланса: 
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/store/authStore.ts#1-1), lines 1 to 55
+
+Using "Replace String in File"
+
+
+```
+
+```
+
+
+Using "Replace String in File"
+
+
+```
+
+```
+Теперь обновлю auth callback для сохранения токена: 
+
+Using "Replace String in File"
+
+
+```
+
+```
+Теперь нужно обновить ShelterProfile для синхронизации баланса. Добавлю hook для периодического обновления баланса: 
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/hooks/useSyncBalance.ts)
+
+Теперь обновлю ShelterProfile для использования синхронизации баланса: 
+
+Using "Replace String in File"
+
+
+```
+
+```
+Теперь нужно исправить проблему с кнопкой WebApp. Давайте посмотрим на боте где это создается. Нужно найти обработчик команды на боте: 
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/backend/bot/handlers)
+
+Using "Replace String in File"
+
+
+```
+
+```
+Отлично! Теперь создам документацию по всем внесенным изменениям: 
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/docs/PROFILE_FIXES_AND_SYNC.md)
+
+Теперь делаю коммит всех изменений: 
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE" ; git add . ; git commit -m "fix: реферальный код, синхронизация баланса, аватар, WebApp кнопка / Fix referral code display, balance sync, avatar rendering, WebApp button" ; git push origin main
+
+Отлично! Я заметил, что backend файлы были удалены. Нужно их восстановить. Давайте проверим что произошло: 
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/backend)
+
+Нужно восстановить bot папку. Давайте посмотрим историю git: 
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE" ; git log --oneline -5
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE" ; git show 39b4069:under-people-platform/backend/bot/handlers/start.py | head -30
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE" ; git show 39b4069:under-people-platform/backend/bot/handlers/start.py
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/backend/bot/handlers/start.py)
+
+Made changes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+79====perp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Я проанализировал логи и проекты. Вот полная карта проблем и их решения:
+
+
+## Проблема: TypeScript ошибка в callback/page.tsx
+
+### Репозиторий: [Under-People-Club-SITE](https://github.com/nkVas1/Under-People-Club-SITE)
+
+**Ошибка Vercel:**
+```
+Type error: Object literal may only specify known properties, and 'telegram_id' does not exist in type 'User'.
+```
+
+TypeScript интерфейс `User` в `authStore.ts` не содержит поле `telegram_id`, но оно используется в `page.tsx` на строке 75.
+
+### Решение:
+
+**Файл:** `under-people-platform/frontend/store/authStore.ts`  
+**Строка:** 5-14
+
+**Заменить:**
+```typescript
+export interface User {
+  id: string;
+  username: string;
+  first_name: string;
+  role: string;
+  clan: string;
+  up_coins: number;
+  avatar_url: string;
+  ref_code: string;
+  referral_code: string;  // ← ДОБАВИТЬ
+  photo_url?: string;  // ← ДОБАВИТЬ
+  membership_level: string;  // ← ДОБАВИТЬ
+}
+```
+
+**На:**
+```typescript
+export interface User {
+  id: string;
+  username: string;
+  first_name: string;
+  role: string;
+  clan: string;
+  up_coins: number;
+  avatar_url: string;
+  ref_code: string;
+  referral_code: string;
+  photo_url?: string;
+  membership_level: string;
+  telegram_id?: number;  // ← ДОБАВИТЬ ЭТО ПОЛЕ
+  token?: string;  // ← ДОБАВИТЬ (для хранения access_token)
+  is_verified?: boolean;  // ← ДОБАВИТЬ (используется в callback)
+}
+```
+
+***
+
+## Полный план действий по порядку
+
+
+### Исправление TypeScript в сайте
+
+** 1. Обновите интерфейс User**
+
+**Файл:** `under-people-platform/frontend/store/authStore.ts`  
+**Строки 5-15:** Замените на:
+
+```typescript
+export interface User {
+  id: string;
+  username: string;
+  first_name: string;
+  role: string;
+  clan: string;
+  up_coins: number;
+  avatar_url: string;
+  ref_code: string;
+  referral_code: string;
+  photo_url?: string;
+  membership_level: string;
+  telegram_id?: number;  // ← КРИТИЧНО ДОБАВИТЬ
+  token?: string;  // ← КРИТИЧНО ДОБАВИТЬ
+  is_verified?: boolean;  // ← КРИТИЧНО ДОБАВИТЬ
+}
+```
+
+**2. Обновите интерфейс AuthState**
+
+**Файл:** `under-people-platform/frontend/store/authStore.ts`  
+**Строки 17-24:** Замените на:
+
+```typescript
+interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (userData: User) => void;
+  logout: () => void;
+  updateCoins: (amount: number) => void;
+  updateUser: (userData: Partial<User>) => void;
+  token?: string;  // ← оставить если есть
+}
+```
+
+***
+
+### Шаг 3: Проверка callback/page.tsx
+
+**Файл:** `under-people-platform/frontend/app/auth/callback/page.tsx`  
+**Строки 67-80:** Убедитесь, что все поля соответствуют обновлённому интерфейсу:
+
+```typescript
+login({
+  id: data.user.id || data.user.telegram_id.toString(),
+  username: data.user.username || data.user.first_name,
+  first_name: data.user.first_name,
+  role: data.user.membership_level,
+  clan: 'UNAFFILIATED',
+  up_coins: data.user.up_coins || 0,
+  avatar_url: data.user.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.first_name)}&background=8A0303&color=fff`,
+  ref_code: data.user.referral_code,
+  referral_code: data.user.referral_code,
+  photo_url: data.user.photo_url,
+  membership_level: data.user.membership_level,
+  telegram_id: data.user.telegram_id,  // ← теперь допустимо
+  token: data.access_token,  // ← теперь допустимо
+  is_verified: true,  // ← теперь допустимо
+});
+```
+
+***
+
+## Проверочный чеклист
+
+
+### Для сайта (Vercel)
+- [ ] В `authStore.ts` добавлены поля `telegram_id?`, `token?`, `is_verified?`
+- [ ] Файл `callback/page.tsx` проходит проверку TypeScript
+- [ ] Запущен локальный билд: `npm run build` — без ошибок
+- [ ] Коммит запушен в GitHub
+- [ ] Vercel автоматически пересобрал проект без ошибок
+
+***
+
+## Команды для выполнения
+
+
+
+### В репозитории сайта:
+```bash
+cd under-people-platform/frontend
+npm run build  # Проверить TypeScript локально
+git add .
+git commit -m "fix: add missing User fields (telegram_id, token, is_verified)"
+git push origin main
+```
+
+***
+
+После этих изменений обе ошибки будут устранены.
+
+[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/00fe3fc9-1ebd-4442-a8a0-60c4f37502c8/logs.1766826895637.log)
+[2](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/531160ee-692c-4f3c-b3f7-29fd7a1200fc/protsess.txt)
+[3](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/6a613192-5f37-418a-92b8-3f5fd9e20af4/zadachi.txt)
+[4](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/4b587bf7-35f0-4ab1-b16a-01f47e51225b/zadachi.txt)
+[5](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/51692e4f-3b5e-4fcf-b386-0e8e12f0099d/protsess.txt)
+[6](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/6135ced1-5f0a-41ad-97a6-11fff5032882/logs.1766816545600.log)
+[7](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/d8228bb9-8b3a-4fca-beee-106017ff57d4/Snimok-ekrana-2025-12-27-092343.jpg)
+[8](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/8ca9c183-66a6-49f8-920c-238d1664190a/logs.1766817949707.log)
+[9](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/cb8c997d-336d-4fb4-82cb-d6b8b7d5305b/logs.1766819494196.log)
+[10](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/8194986e-e56f-4bc7-89a6-36c269e1af76/Snimok-ekrana-2025-12-27-101004.jpg)
+[11](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/e094a25c-56b3-443c-9b85-5a89b05e6458/Snimok-ekrana-2025-12-27-101450.jpg)
+[12](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/c9b253e4-191a-43b5-833f-3f600860395b/Snimok-ekrana-2025-12-27-102735.jpg)
+[13](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/07af1add-537a-4f7b-8997-53c1633eb81b/Snimok-ekrana-2025-12-27-102933.jpg)
+[14](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/00f23270-b2f7-47eb-b254-03470884eee7/logs.1766820478341.log)
+[15](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/cb33fdfa-cf67-4125-9d61-a424533ef92c/Snimok-ekrana-2025-12-27-104139.jpg)
+[16](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/f1d406ea-70a5-42b0-90d7-87a4d6d25336/photo_2025-12-27_10-53-04.jpg)
+[17](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/248a3d74-933d-4d9a-9cc9-3f11d9c8acaf/Snimok-ekrana-2025-12-27-105336.jpg)
+[18](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/66af93d4-7b95-46d5-a70f-9818d1e0ddda/Snimok-ekrana-2025-12-27-105013.jpg)
+[19](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/b6c34874-6abd-48a8-826a-88e735e88e77/logs.1766822751754.log)
+[20](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/a420edc8-c417-4a4a-9a16-463fd0ad25ee/Snimok-ekrana-2025-12-27-105039.jpg)
+[21](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/c8bfd582-1aa1-41be-adcc-6606546481bd/Snimok-ekrana-2025-12-27-112148.jpg)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+80====
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -11,9 +11,12 @@ export interface User {
   up_coins: number;
   avatar_url: string;
   ref_code: string;
-  referral_code: string;  // ← ДОБАВИТЬ
-  photo_url?: string;  // ← ДОБАВИТЬ
-  membership_level: string;  // ← ДОБАВИТЬ
+  referral_code: string;
+  photo_url?: string;
+  membership_level: string;
+  telegram_id?: number;  // ← ДОБАВИТЬ (используется в callback)
+  token?: string;  // ← ДОБАВИТЬ (для хранения access_token)
+  is_verified?: boolean;  // ← ДОБАВИТЬ (используется в callback)
 }
 
 interface AuthState {

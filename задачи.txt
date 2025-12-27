@@ -676,6 +676,90 @@ https://github.com/nkVas1/Under-People-Club-SITE и https://github.com/nkVas1/up
 
 
 
+Выполни правильное обновление БД. Сейчас там недостаёт параметра. Вот логи бота на Railway - logs.1766826895637.log. Приложил файл. Также, после обновлений сайта, появилась ошибка при деплое на Vercel: "12:36:03.523 Running build in Washington, D.C., USA (East) – iad1
+12:36:03.523 Build machine configuration: 2 cores, 8 GB
+12:36:03.666 Cloning github.com/nkVas1/Under-People-Club-SITE (Branch: main, Commit: 0c5eb53)
+12:36:03.995 Warning: Failed to fetch one or more git submodules
+12:36:04.000 Cloning completed: 332.000ms
+12:36:04.401 Restored build cache from previous deployment (Ek1VUxQkZsmEvrTVKpFkBnyBysZx)
+12:36:04.925 Running "vercel build"
+12:36:05.660 Vercel CLI 50.1.3
+12:36:05.983 Running "install" command: `npm install --legacy-peer-deps`...
+12:36:12.295 
+12:36:12.296 > under-people-frontend@0.1.0 postinstall
+12:36:12.296 > echo 'Dependencies installed successfully'
+12:36:12.296 
+12:36:12.311 Dependencies installed successfully
+12:36:12.316 
+12:36:12.317 up to date, audited 406 packages in 6s
+12:36:12.317 
+12:36:12.317 153 packages are looking for funding
+12:36:12.318   run `npm fund` for details
+12:36:12.368 
+12:36:12.369 3 high severity vulnerabilities
+12:36:12.369 
+12:36:12.370 To address all issues (including breaking changes), run:
+12:36:12.370   npm audit fix --force
+12:36:12.370 
+12:36:12.371 Run `npm audit` for details.
+12:36:12.378 Detected Next.js version: 14.2.35
+12:36:12.383 Running "npm run build"
+12:36:12.506 
+12:36:12.507 > under-people-frontend@0.1.0 build
+12:36:12.507 > next build
+12:36:12.507 
+12:36:13.169   ▲ Next.js 14.2.35
+12:36:13.170 
+12:36:13.238    Creating an optimized production build ...
+12:36:13.301  ⚠ Found lockfile missing swc dependencies, run next locally to automatically patch
+12:36:16.328 
+12:36:16.328 
+12:36:16.389 Source path: /vercel/path0/under-people-platform/frontend/app/globals.css
+12:36:16.390 Setting up new context...
+12:36:16.526 Finding changed files: 10.816ms
+12:36:16.579 Reading changed files: 58.699ms
+12:36:16.583 Sorting candidates: 3.023ms
+12:36:16.687 Generate rules: 107.593ms
+12:36:16.692 Build stylesheet: 4.138ms
+12:36:16.704 Potential classes:  1802
+12:36:16.705 Active contexts:  1
+12:36:16.741 JIT TOTAL: 412.922ms
+12:36:16.742 
+12:36:16.742 
+12:36:17.189  ✓ Compiled successfully
+12:36:17.190    Linting and checking validity of types ...
+12:36:17.548 
+12:36:17.549    We detected TypeScript in your project and reconfigured your tsconfig.json file for you. Strict-mode is set to false by default.
+12:36:17.549    The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+12:36:17.549 
+12:36:17.549    	- allowJs was set to true
+12:36:17.549    	- noEmit was set to true
+12:36:17.549 
+12:36:21.871 Failed to compile.
+12:36:21.871 
+12:36:21.871 ./app/auth/callback/page.tsx:75:13
+12:36:21.871 Type error: Object literal may only specify known properties, and 'telegram_id' does not exist in type 'User'.
+12:36:21.871 
+12:36:21.871 [0m [90m 73 |[39m             photo_url[33m:[39m data[33m.[39muser[33m.[39mphoto_url[33m,[39m[0m
+12:36:21.871 [0m [90m 74 |[39m             membership_level[33m:[39m data[33m.[39muser[33m.[39mmembership_level[33m,[39m[0m
+12:36:21.871 [0m[31m[1m>[22m[39m[90m 75 |[39m             telegram_id[33m:[39m data[33m.[39muser[33m.[39mtelegram_id[33m,[39m[0m
+12:36:21.872 [0m [90m    |[39m             [31m[1m^[22m[39m[0m
+12:36:21.872 [0m [90m 76 |[39m             token[33m:[39m data[33m.[39maccess_token[33m,[39m[0m
+12:36:21.872 [0m [90m 77 |[39m             is_verified[33m:[39m [36mtrue[39m[33m,[39m[0m
+12:36:21.872 [0m [90m 78 |[39m           })[33m;[39m[0m
+12:36:21.894 Next.js build worker exited with code: 1 and signal: null
+12:36:21.924 Error: Command "npm run build" exited with 1".
+
+
+
+
+
+
+
+
+
+
+
 
 
 
