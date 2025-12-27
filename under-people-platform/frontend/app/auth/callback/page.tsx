@@ -35,9 +35,8 @@ function AuthCallbackContent() {
 
         setStatus('CONNECTING TO NEURAL NETWORK...');
 
-        // КРИТИЧНО: Отправляем ТОЛЬКО код на backend
-        // telegram_id извлекается из БД по коду!
-        const callbackUrl = `${apiUrl}/api/auth/callback?code=${encodeURIComponent(code)}`;
+        // ✅ ИСПРАВЛЕНО: Отправляем код в BODY, не в URL query!
+        const callbackUrl = `${apiUrl}/api/auth/callback`;
         
         console.log('📤 [AUTH] Sending request to:', callbackUrl);
 
@@ -47,6 +46,7 @@ function AuthCallbackContent() {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
+          body: JSON.stringify({ code }),  // 🔴 КОД В ТЕЛЕ!
         });
 
         console.log('📨 [AUTH] Response status:', response.status);
