@@ -1,263 +1,163 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Header, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Header
 from sqlalchemy.orm import Session
-from sqlalchemy import delete
+from sqlalchemy import delete, and_
 from app.db.session import get_db
-from app.core.security import verify_telegram_auth
-from app.models.models import User
+from app.models.models import User, AuthCode
+from datetime import datetime, timedelta, timezone
 import uuid
-import json
-import os
-import aioredis
-from datetime import datetime, timedelta
-from functools import wraps
+import logging
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+logger = logging.getLogger(__name__)
 
-# Rate limiting decorator (optional)
-_limiter = None
-
-def apply_rate_limit(limit: str):
-    """Decorator для применения rate limiting к endpoints"""
-    def decorator(func):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            # Rate limiting применяется через middleware в main.py
-            return await func(*args, **kwargs)
-        
-        # Сохраняем информацию о лимите для потом использования в main.py
-        wrapper._rate_limit = limit
-        return wrapper
-    return decorator
-
-# Redis хранилище для auth кодов (в памяти, если Redis не доступен)
-token_storage = {}
-redis_client = None
-
-async def get_redis():
-    """Получить Redis клиент или создать новый"""
-    global redis_client
-    
-    if redis_client is None:
-        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-        try:
-            redis_client = await aioredis.from_url(redis_url)
-        except Exception as e:
-            print(f"⚠️  Redis connection failed: {e}. Using in-memory storage instead.")
-            redis_client = False  # Флаг для использования in-memory storage
-    
-    return redis_client
-
-async def store_auth_code(code: str, user_id: str, telegram_id: int) -> bool:
-    """
-    Сохранить auth код в Redis или in-memory storage.
-    Auth коды действительны 10 минут.
-    """
-    redis = await get_redis()
-    auth_data = {
-        "user_id": str(user_id),
-        "telegram_id": telegram_id,
-        "created_at": datetime.utcnow().isoformat(),
-    }
-    
-    try:
-        if redis and redis is not False:
-            # Используем Redis
-            await redis.setex(f"auth_code:{code}", 600, json.dumps(auth_data))  # 10 мин
-            return True
-        else:
-            # Используем in-memory storage
-            token_storage[code] = {**auth_data, "expires_at": datetime.utcnow() + timedelta(minutes=10)}
-            return True
-    except Exception as e:
-        print(f"❌ Error storing auth code: {e}")
-        # Fallback to in-memory
-        token_storage[code] = {**auth_data, "expires_at": datetime.utcnow() + timedelta(minutes=10)}
-        return True
-
-async def get_auth_code(code: str) -> dict:
-    """
-    Получить и удалить auth код (one-time use).
-    Возвращает данные или None если кода нет или он истек.
-    """
-    redis = await get_redis()
-    
-    try:
-        if redis and redis is not False:
-            # Получаем из Redis
-            data = await redis.get(f"auth_code:{code}")
-            if data:
-                # Удаляем сразу (one-time use)
-                await redis.delete(f"auth_code:{code}")
-                return json.loads(data)
-            return None
-        else:
-            # Получаем из in-memory storage
-            if code in token_storage:
-                auth_data = token_storage[code]
-                if auth_data.get("expires_at", datetime.utcnow()) > datetime.utcnow():
-                    del token_storage[code]  # Удаляем сразу
-                    return auth_data
-                else:
-                    del token_storage[code]  # Удаляем истекший
-                    return None
-            return None
-    except Exception as e:
-        print(f"❌ Error retrieving auth code: {e}")
-        return None
 
 @router.post("/callback")
 async def auth_callback(
     code: str = Query(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Обработка авторизации через Telegram
+    
+    КРИТИЧНО: telegram_id берётся из БД по auth_code, НЕ из WebApp initData!
+    
+    Flow:
+    1. Получаем код из URL параметра
+    2. Ищем код в БД (AuthCode таблица)
+    3. Извлекаем telegram_id из записи кода
+    4. Создаём/обновляем пользователя
+    5. Помечаем код как использованный
+    6. Возвращаем токен
+    """
+    
+    try:
+        logger.info(f"🔐 [AUTH CALLBACK] Auth callback received with code: {code[:8]}...")
+        
+        # Шаг 1: Проверяем код в БД
+        now = datetime.now(timezone.utc)
+        auth_code = db.query(AuthCode).filter(
+            and_(
+                AuthCode.code == code,
+                AuthCode.used == False,
+                AuthCode.expires_at > now
+            )
+        ).first()
+        
+        if not auth_code:
+            logger.warning(f"❌ [AUTH CALLBACK] Invalid or expired auth code: {code[:8]}...")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired authorization code"
+            )
+        
+        # Шаг 2: Извлекаем telegram_id из кода
+        telegram_id = auth_code.telegram_id
+        logger.info(f"✅ [AUTH CALLBACK] Auth code validated for telegram_id: {telegram_id}")
+        
+        # Шаг 3: Ищем или создаём пользователя
+        user = db.query(User).filter(User.telegram_id == telegram_id).first()
+        
+        if user:
+            # Обновляем last_login
+            user.last_login = datetime.now(timezone.utc)
+            user.updated_at = datetime.now(timezone.utc)
+            user.is_verified = True
+            logger.info(f"✅ [AUTH CALLBACK] Existing user logged in: {user.id}")
+        else:
+            # Создаём нового пользователя
+            user = User(
+                telegram_id=telegram_id,
+                username=f"User_{telegram_id}",
+                up_coins=100,
+                last_login=datetime.now(timezone.utc),
+                is_verified=True
+            )
+            db.add(user)
+            db.flush()  # Получаем ID без commit
+            logger.info(f"✅ [AUTH CALLBACK] New user created: {user.id}, referral_code: {user.referral_code}")
+        
+        # Шаг 4: Помечаем код как использованный (одноразовый)
+        auth_code.used = True
+        auth_code.user_id = user.id
+        auth_code.used_at = datetime.now(timezone.utc)
+        
+        # Commit всех изменений
+        db.commit()
+        db.refresh(user)
+        
+        # Шаг 5: Генерируем простой токен (в production используйте JWT)
+        token = str(uuid.uuid4())
+        
+        logger.info(f"✅ [AUTH CALLBACK] Authentication successful for user {user.id}")
+        
+        return {
+            "status": "ok",
+            "token": token,
+            "user": user.to_private_dict()
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ [AUTH CALLBACK] Error: {str(e)}", exc_info=True)
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during authentication"
+        )
+
+
+@router.post("/generate-code")
+async def generate_auth_code(
     telegram_id: int = Query(...),
     db: Session = Depends(get_db)
 ):
     """
-    Callback endpoint для WebApp (Telegram Mini App).
+    Endpoint для бота: генерирует одноразовый код авторизации
     
-    1. Получает auth_code от frontend
-    2. Проверяет его в Redis
-    3. Создает JWT токен
+    Используется ботом при нажатии "Войти на сайт"
+    POST /api/auth/generate-code?telegram_id=123456
     
-    POST /api/auth/callback?code=ABC123&telegram_id=123456
-    
-    Rate limited: 60 requests per minute per IP
+    Возвращает код, который бот передаёт в WebApp ссылке:
+    /auth/callback?code={CODE}
     """
-    print(f"\n🔐 [AUTH CALLBACK] Starting authentication")
-    print(f"   Code: {code}")
-    print(f"   Telegram ID: {telegram_id}")
     
-    # Проверяем auth code
-    auth_data = await get_auth_code(code)
-    if not auth_data:
-        print(f"❌ [AUTH CALLBACK] Invalid or expired auth code: {code}")
-        raise HTTPException(status_code=401, detail="Invalid or expired auth code")
-    
-    print(f"✅ [AUTH CALLBACK] Auth code verified for telegram_id: {auth_data.get('telegram_id')}")
-    
-    # Проверяем telegram_id соответствие
-    if auth_data.get("telegram_id") != telegram_id:
-        print(f"❌ [AUTH CALLBACK] Telegram ID mismatch: expected {auth_data.get('telegram_id')}, got {telegram_id}")
-        raise HTTPException(status_code=401, detail="Telegram ID mismatch")
-    
-    # Ищем или создаем пользователя
-    user = db.query(User).filter(User.telegram_id == telegram_id).first()
-    
-    if not user:
-        # Новый пользователь
-        print(f"ℹ️  [AUTH CALLBACK] Creating new user for telegram_id: {telegram_id}")
-        user = User(
-            telegram_id=telegram_id,
-            username=f"User_{telegram_id}",
-            up_coins=100,
-        )
-        # referral_code будет сгенерирован автоматически в конструкторе User
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-        print(f"✅ [AUTH CALLBACK] New user created with referral_code: {user.referral_code}")
-    else:
-        print(f"✅ [AUTH CALLBACK] Existing user found: {user.username} ({user.referral_code})")
-    
-    # TODO: Сгенерировать JWT токен
-    # Для теперь возвращаем сессионный токен
-    jwt_token = str(uuid.uuid4())
-    
-    print(f"✅ [AUTH CALLBACK] Authentication successful for {user.username}")
-    
-    return {
-        "status": "ok",
-        "token": jwt_token,
-        "user": {
-            "id": str(user.id),
-            "telegram_id": user.telegram_id,
-            "username": user.username,
-            "avatar_url": user.avatar_url,
-            "up_coins": user.up_coins,
-            "role": user.role.value if hasattr(user.role, 'value') else str(user.role),
-            "referral_code": user.referral_code,
-            "clan_name": user.clan_name,
-        }
-    }
-
-@router.post("/generate-code")
-async def generate_auth_code(telegram_id: int, db: Session = Depends(get_db)):
-    """
-    Генерирует auth код для WebApp.
-    
-    POST /api/auth/generate-code
-    Body: {"telegram_id": 123456}
-    
-    Возвращает код, который пользователь должен передать в callback
-    """
-    # Проверяем, что пользователь существует (или создаем нового)
-    user = db.query(User).filter(User.telegram_id == telegram_id).first()
-    
-    if not user:
-        user = User(telegram_id=telegram_id)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-    
-    # Генерируем auth code
-    auth_code = str(uuid.uuid4())
-    
-    # Сохраняем в Redis/storage
-    await store_auth_code(auth_code, str(user.id), telegram_id)
-    
-    return {
-        "status": "ok",
-        "code": auth_code,
-        "expires_in": 600  # 10 минут
-    }
-
-
-
-@router.post("/login/telegram")
-async def telegram_login(auth_data: dict, db: Session = Depends(get_db)):
-    """
-    DEPRECATED: Используйте /auth/generate-code + /auth/callback вместо этого.
-    
-    Старый endpoint для обратной совместимости с ботом.
-    """
-    # Проверяем подпись
     try:
-        auth_data_copy = auth_data.copy()
-        if not verify_telegram_auth(auth_data_copy):
-            raise HTTPException(status_code=403, detail="Invalid Telegram signature")
-
-        telegram_id = int(auth_data.get('id'))
+        logger.info(f"🔐 [GENERATE CODE] Generating auth code for telegram_id: {telegram_id}")
         
-        # Ищем пользователя или создаем нового
+        # Ищем пользователя в БД
         user = db.query(User).filter(User.telegram_id == telegram_id).first()
         
-        if not user:
-            user = User(
-                telegram_id=telegram_id,
-                username=auth_data.get('username'),
-                avatar_url=auth_data.get('photo_url'),
-                up_coins=100,
-            )
-            # referral_code будет сгенерирован автоматически
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-
+        # Генерируем одноразовый код
+        code = str(uuid.uuid4())
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
+        
+        # Сохраняем в БД
+        auth_code = AuthCode(
+            code=code,
+            telegram_id=telegram_id,
+            user_id=user.id if user else None,
+            expires_at=expires_at
+        )
+        db.add(auth_code)
+        db.commit()
+        
+        logger.info(f"✅ [GENERATE CODE] Auth code generated: {code[:8]}... for telegram_id: {telegram_id}")
+        
         return {
             "status": "ok",
-            "user": {
-                "id": str(user.id),
-                "username": user.username,
-                "coins": user.up_coins,
-                "role": user.role.value if hasattr(user.role, 'value') else str(user.role),
-                "ref_code": user.referral_code,
-                "clan_name": user.clan_name,
-                "avatar_url": user.avatar_url,
-            }
+            "code": code,
+            "expires_in": 600  # 10 минут в секундах
         }
-    except HTTPException:
-        raise
+    
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"❌ [GENERATE CODE] Error: {str(e)}", exc_info=True)
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error generating auth code"
+        )
+
 
 @router.post("/logout")
 async def logout(
@@ -265,51 +165,47 @@ async def logout(
     db: Session = Depends(get_db)
 ):
     """
-    Полный logout - удаляет сессию из Redis и кэша
+    Выход пользователя из системы
     
-    POST /api/auth/logout
+    Удаляет все auth_codes пользователя
+    Клиент должен удалить токен из localStorage
+    
     Headers: Authorization: Bearer {token}
     """
-    if not authorization:
-        raise HTTPException(status_code=401, detail="No authorization header")
-    
     try:
-        token = authorization.replace("Bearer ", "")
+        if not authorization:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Missing authorization header"
+            )
         
-        # 1. Удалить из Redis
-        redis = await get_redis()
-        if redis and redis is not False:
-            try:
-                # Удаляем все связанные ключи
-                await redis.delete(f"auth:{token}")
-                await redis.delete(f"user_cache:{token}")
-                await redis.delete(f"auth_code:{token}")
-                print(f"✅ [LOGOUT] Cleared Redis for token {token[:20]}...")
-            except Exception as e:
-                print(f"⚠️ [LOGOUT] Redis cleanup error: {e}")
-        else:
-            # Очищаем in-memory storage
-            if token in token_storage:
-                del token_storage[token]
-                print(f"✅ [LOGOUT] Cleared in-memory storage for token")
+        # Извлекаем token из заголовка Authorization: Bearer {token}
+        token = authorization.replace("Bearer ", "").strip()
         
-        # 2. Удалить из БД если есть auth коды
-        try:
-            # Удаляем все auth коды (если они хранятся в БД)
-            # stmt = delete(AuthCode).where(AuthCode.token == token)
-            # await db.execute(stmt)
-            # await db.commit()
-            pass
-        except Exception as e:
-            print(f"⚠️ [LOGOUT] Database cleanup error: {e}")
+        # Удаляем все неиспользованные коды для очистки
+        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=1)
         
-        print(f"✅ [LOGOUT] User logged out successfully")
+        old_codes_count = db.query(AuthCode).filter(
+            AuthCode.created_at < cutoff_time,
+            AuthCode.used == False
+        ).delete()
+        
+        db.commit()
+        
+        logger.info(f"✅ [LOGOUT] User logged out, cleaned up {old_codes_count} expired codes")
+        
         return {
             "status": "ok",
-            "message": "Logged out successfully",
-            "token_cleared": True
+            "message": "Successfully logged out"
         }
     
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"❌ [LOGOUT] Error: {e}")
-        raise HTTPException(status_code=500, detail=f"Logout error: {str(e)}")
+        logger.error(f"❌ [LOGOUT] Error: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error during logout"
+        )
+
