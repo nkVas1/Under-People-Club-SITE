@@ -2,19 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { ApiClient } from '@/lib/api-client';
+import type { PublicProfileResponse } from '@/types/api';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://upcworldbot-production.up.railway.app';
+// Debug mode (показывать только в dev)
+const isDev = process.env.NODE_ENV === 'development';
 
-interface PublicProfile {
-  id: number;
-  username: string | null;
-  first_name: string | null;
-  referral_code: string;
-  membership_level: string;
-  is_verified: boolean;
-  avatar_url: string;
-  created_at: string | null;
-}
+interface PublicProfile extends PublicProfileResponse {}
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -26,24 +20,14 @@ export default function PublicProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const url = `${API_URL}/api/users/u/${code}`;
-        console.log('🔍 Fetching public profile:', url);
+        console.log('🔍 [PUBLIC PROFILE] Fetching:', code);
+        console.log('📍 [PUBLIC PROFILE] Code:', code);
         
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          if (response.status === 404) {
-            const errorData = await response.json().catch(() => ({ detail: 'Profile not found' }));
-            throw new Error(errorData.detail || `PROFILE NOT FOUND - CODE: ${code}`);
-          }
-          throw new Error(`Error: ${response.status} - ${await response.text()}`);
-        }
-
-        const data = await response.json();
-        setProfile(data);
-        console.log('✅ Profile loaded:', data);
+        const data = await ApiClient.getPublicProfile(code);
+        console.log('✅ [PUBLIC PROFILE] Data:', data);
+        setProfile(data as PublicProfile);
       } catch (err) {
-        console.error('❌ Error:', err);
+        console.error('❌ [PUBLIC PROFILE] Exception:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch profile');
       } finally {
         setLoading(false);
@@ -51,9 +35,23 @@ export default function PublicProfilePage() {
     };
 
     if (code) {
+      console.log('🚀 [PUBLIC PROFILE] Starting fetch with code:', code);
       fetchProfile();
+    } else {
+      console.error('❌ [PUBLIC PROFILE] No code provided');
+      setError('No referral code provided');
+      setLoading(false);
     }
   }, [code]);
+
+  // Debug mode (показывать только в dev)
+  if (isDev && !loading && (profile || error)) {
+    console.log('🔍 [DEBUG] Profile state:', {
+      code,
+      profile,
+      error,
+    });
+  }
 
   if (loading) {
     return (
@@ -90,9 +88,13 @@ export default function PublicProfilePage() {
           <div className="inline-block p-1 bg-gradient-to-br from-red-600 to-red-800 rounded-full mb-4">
             <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-800">
               <img 
-                src={profile.avatar_url} 
+                src={profile.avatar_url || `https://api.dicebear.com/9.x/avataaars/svg?seed=${profile.referral_code}`}
                 alt={profile.first_name || 'User'} 
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback если изображение не загрузилось
+                  e.currentTarget.src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${profile.referral_code}`;
+                }}
               />
             </div>
           </div>
