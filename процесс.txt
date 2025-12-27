@@ -11225,6 +11225,200 @@ Made changes.
 
 
 
+Я изучил скриншоты и логи. Проблема понятна:
+
+1.  **На сайте:** Вы видите "ACCESS DENIED / Error: Failed to fetch". Это означает, что фронтенд (Vercel) не может достучаться до бэкенда (Railway).
+2.  **Причина:** Скорее всего, **CORS** (Browser Security) блокирует запрос, или URL бэкенда указан неверно (HTTP вместо HTTPS), или сервер API вообще не отвечает на OPTIONS запросы.
+3.  **Логи Railway:** Показывают, что бот перезапускался из-за конфликта (`Conflict: terminated by other getUpdates request`), но сейчас вроде работает. Ошибок API в логах Railway **нет**, значит запрос от сайта даже не долетает до Python-кода (блокируется браузером или сетью).
+
+Мы должны исправить **CORS** на бэкенде и добавить обработку ошибок на фронтенде.
+
+***
+
+### ЭТАП 1: Исправление Фронтенда (Обработка ошибок)
+
+Вы правильно заметили, что я просил добавить обработку ошибок. Без нее вы видите просто "Failed to fetch", но не знаете деталей.
+
+**Файл:** `under-people-platform/frontend/app/auth/callback/page.tsx`
+
+*Замените весь файл на этот код с улучшенной отладкой:*
+
+```tsx
+'use client';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
+
+export default function AuthCallback() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const code = searchParams.get('code');
+  const login = useAuthStore((state) => state.login);
+  const [status, setStatus] = useState<string>("INITIALIZING SECURE HANDSHAKE...");
+  const [errorDetails, setErrorDetails] = useState<string>("");
+
+  useEffect(() => {
+    if (!code) {
+      setStatus("ERROR: MISSING AUTH CODE");
+      return;
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+        setStatus("ERROR: API URL NOT CONFIGURED");
+        return;
+    }
+
+    setStatus(`CONNECTING TO NEURAL NETWORK...`);
+    
+    // Делаем запрос на обмен кода
+    fetch(`${apiUrl}/api/auth/code/exchange`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json' 
+      },
+      body: JSON.stringify({ code })
+    })
+    .then(async (res) => {
+       if (!res.ok) {
+           // Пытаемся прочитать текст ошибки от сервера
+           const errorText = await res.text();
+           throw new Error(`Server Error (${res.status}): ${errorText}`);
+       }
+       return res.json();
+    })
+    .then(data => {
+      console.log("Auth success:", data);
+      
+      if (data.access_token) {
+          setStatus("ACCESS GRANTED. REDIRECTING...");
+          
+          // Сохраняем данные пользователя
+          login({
+              id: data.user_id.toString(), // Приводим к строке
+              username: "Stalker", // Если сервер не вернул имя, ставим заглушку
+              telegram_id: data.user_id,
+              up_coins: 0,
+              role: 'ranger',
+              clan: 'Novice',
+              ref_code: `UP-${data.user_id}`,
+              token: data.access_token
+          });
+
+          // Небольшая задержка для красоты
+          setTimeout(() => router.push('/shelter'), 1000);
+      } else {
+          throw new Error("Token missing in response");
+      }
+    })
+    .catch(err => {
+        console.error("Login failed:", err);
+        setStatus("ACCESS DENIED");
+        setErrorDetails(err.message || "Network Error (CORS or Offline)");
+    });
+
+  }, [code, router, login]);
+
+  return (
+    <div className="min-h-screen bg-black text-[#8A0303] flex flex-col items-center justify-center font-mono p-4">
+       <h1 className="text-2xl md:text-4xl font-black mb-4 tracking-widest animate-pulse">
+         {status}
+       </h1>
+       
+       {errorDetails && (
+         <div className="border border-red-900 bg-red-950/30 p-4 max-w-md w-full text-xs md:text-sm text-red-400">
+            <p className="font-bold mb-2">DIAGNOSTIC REPORT:</p>
+            <code className="break-all">{errorDetails}</code>
+            <button 
+                onClick={() => router.push('/')}
+                className="mt-4 w-full border border-red-800 py-2 hover:bg-red-900/50 transition-colors uppercase"
+            >
+                Return to Surface
+            </button>
+         </div>
+       )}
+    </div>
+  );
+}
+```
+
+***
+
+### ЭТАП 2: Проверка Переменных Окружения (Vercel)
+
+Ошибка "Failed to fetch" часто бывает, если переменная `NEXT_PUBLIC_API_URL` не задана или указывает на `http://localhost`.
+
+1.  Зайдите в **Vercel Dashboard** -> Project -> **Settings** -> **Environment Variables**.
+2.  Убедитесь, что там есть `NEXT_PUBLIC_API_URL`.
+3.  Значение должно быть: `https://web-production-xxxx.up.railway.app` (ваш реальный домен Railway, **обязательно HTTPS**, без слэша в конце).
+4.  Если меняли — **сделайте Redeploy** (Deployments -> Redeploy), иначе старые значения останутся в билде.
+
+***
+
+**Резюме:**
+
+1.  **Vercel:** Проверьте переменную `NEXT_PUBLIC_API_URL` (должна быть HTTPS).
+2.  **Frontend:** Обновите `auth/callback/page.tsx`, чтобы видеть реальную причину ошибки, а не просто "Failed to fetch".
+
+После этого CORS пропустит запрос, и авторизация заработает.
+
+[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/988c5ff4-fa4b-4f06-9daa-a4a70536cfac/Snimok-ekrana-2025-12-27-015340.jpg?AWSAccessKeyId=ASIA2F3EMEYEQRJBR2VD&Signature=fGJhJw%2FI6JJC%2B%2FanJzTAGxlRIIQ%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEJ3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCICiCyG4kCg2BVTMWxuZSffM7PCX69Jwdmy3eejIu36MhAiEAmArc6Ts%2FyMWvpuDQB4KBzkzrSwu31E7GO6U01slF1ZMq8wQIZRABGgw2OTk3NTMzMDk3MDUiDAbaW%2BZv6Latgtyv6SrQBOr7w2I2KJTTKzaRMq7OCGoN8H5wE%2BjqYZhralBU1LmviQ9Qd%2FbHEgO2uLDhF3J%2FymEynfbnNArA9OO3iNU7R8K%2BpKCcLle04Rsczx4FqFl7Z%2BXygha581s0TbDYdcJsWA0q%2BjfPMIvgpibGcWgC2njHHO2jvo%2Fw9UUFYrPtabFGr5QrEmVFsJN%2F6%2BYIj%2BzkqZFt7nTXTzzI1Kqw1F8kCQ2mQSW9s4eu9o2z9E%2BD3wE7myn4%2BQm5cXdfyDngqm0iCnY0rND0emdQIyZDpRK8zxqGCFI1lH6eVqNjWkVAypY4owM%2FG91qsIgIXIS5Im9VX4yl9T%2B8rXFznXISSrjZPL3a002bNkaCrA7uM2CTY7nFmSb3DNbQPlh9Q%2BRSFy4vEMpc1UFh7hXo6%2Feqj7NlB%2BJifczPqEd9uI2H3MrA6E21iaeG4i69q%2FH0k0F0elV%2B33G2s%2F1rLd23ejjNEZ1xVnnCAhJk4CF3AGh2KT7GAocFubRiOSFbqd3MctG95Zv%2FH17efvh0NyeFnYVxPWYEroh5mRWfXjMOh9LHE6%2BZawokLxwB9nThBeIKnOmiIkrnQQxR15Q5gi7M8U7j3fyzrjJGX%2B2zF05bb2vUjhohYjKhM%2B6xHJb5kc7W8xSvSSHA4jFolrDaGN0gELl8h7OhKdcDJka7WkgTlAx6C8bnGxb5vTOwNndnHPT4W5qtjbApB9MANIPXxTd1QPE%2FSWDIyoKlTHFyJ8ahsmf3JUowoWRAwusr2UIKAq%2FIvrr4uJNcaA27dAPN0SznJIJIsgKWn30w1Le9ygY6mAFCo%2FmnhTXO0eeh%2FyAVZGFYceSjGyC5N2cDdemKCq55zT178%2BlUstVjuXMbYRNpAswAImhpY%2FNCR%2FNIbv4MtP5eUL%2FZW2nRBH%2FfJ1d6MggAyBNQL1RQjeDhKWEU8T2MOXoAoh1OvgYp8Sx8YRD%2B8aoYNkyp7s14qAoiurSdq7L2gl7GTxmLOj715eJqgwnTP4TifkBniddxGA%3D%3D&Expires=1766809923)
+[2](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/7dc0b17a-5ea6-458f-997a-ad5af87508fe/Snimok-ekrana-2025-12-27-015428.jpg?AWSAccessKeyId=ASIA2F3EMEYEQRJBR2VD&Signature=s1e8bZy%2F84nY9lRx23EPOOSYwD8%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEJ3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCICiCyG4kCg2BVTMWxuZSffM7PCX69Jwdmy3eejIu36MhAiEAmArc6Ts%2FyMWvpuDQB4KBzkzrSwu31E7GO6U01slF1ZMq8wQIZRABGgw2OTk3NTMzMDk3MDUiDAbaW%2BZv6Latgtyv6SrQBOr7w2I2KJTTKzaRMq7OCGoN8H5wE%2BjqYZhralBU1LmviQ9Qd%2FbHEgO2uLDhF3J%2FymEynfbnNArA9OO3iNU7R8K%2BpKCcLle04Rsczx4FqFl7Z%2BXygha581s0TbDYdcJsWA0q%2BjfPMIvgpibGcWgC2njHHO2jvo%2Fw9UUFYrPtabFGr5QrEmVFsJN%2F6%2BYIj%2BzkqZFt7nTXTzzI1Kqw1F8kCQ2mQSW9s4eu9o2z9E%2BD3wE7myn4%2BQm5cXdfyDngqm0iCnY0rND0emdQIyZDpRK8zxqGCFI1lH6eVqNjWkVAypY4owM%2FG91qsIgIXIS5Im9VX4yl9T%2B8rXFznXISSrjZPL3a002bNkaCrA7uM2CTY7nFmSb3DNbQPlh9Q%2BRSFy4vEMpc1UFh7hXo6%2Feqj7NlB%2BJifczPqEd9uI2H3MrA6E21iaeG4i69q%2FH0k0F0elV%2B33G2s%2F1rLd23ejjNEZ1xVnnCAhJk4CF3AGh2KT7GAocFubRiOSFbqd3MctG95Zv%2FH17efvh0NyeFnYVxPWYEroh5mRWfXjMOh9LHE6%2BZawokLxwB9nThBeIKnOmiIkrnQQxR15Q5gi7M8U7j3fyzrjJGX%2B2zF05bb2vUjhohYjKhM%2B6xHJb5kc7W8xSvSSHA4jFolrDaGN0gELl8h7OhKdcDJka7WkgTlAx6C8bnGxb5vTOwNndnHPT4W5qtjbApB9MANIPXxTd1QPE%2FSWDIyoKlTHFyJ8ahsmf3JUowoWRAwusr2UIKAq%2FIvrr4uJNcaA27dAPN0SznJIJIsgKWn30w1Le9ygY6mAFCo%2FmnhTXO0eeh%2FyAVZGFYceSjGyC5N2cDdemKCq55zT178%2BlUstVjuXMbYRNpAswAImhpY%2FNCR%2FNIbv4MtP5eUL%2FZW2nRBH%2FfJ1d6MggAyBNQL1RQjeDhKWEU8T2MOXoAoh1OvgYp8Sx8YRD%2B8aoYNkyp7s14qAoiurSdq7L2gl7GTxmLOj715eJqgwnTP4TifkBniddxGA%3D%3D&Expires=1766809923)
+[3](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/538dcca3-dde8-4c92-97b4-9f44b90ee1d7/Snimok-ekrana-2025-12-27-015452.jpg?AWSAccessKeyId=ASIA2F3EMEYEQRJBR2VD&Signature=AyawvAINjAF6uI8xRoIwfwdAw54%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEJ3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCICiCyG4kCg2BVTMWxuZSffM7PCX69Jwdmy3eejIu36MhAiEAmArc6Ts%2FyMWvpuDQB4KBzkzrSwu31E7GO6U01slF1ZMq8wQIZRABGgw2OTk3NTMzMDk3MDUiDAbaW%2BZv6Latgtyv6SrQBOr7w2I2KJTTKzaRMq7OCGoN8H5wE%2BjqYZhralBU1LmviQ9Qd%2FbHEgO2uLDhF3J%2FymEynfbnNArA9OO3iNU7R8K%2BpKCcLle04Rsczx4FqFl7Z%2BXygha581s0TbDYdcJsWA0q%2BjfPMIvgpibGcWgC2njHHO2jvo%2Fw9UUFYrPtabFGr5QrEmVFsJN%2F6%2BYIj%2BzkqZFt7nTXTzzI1Kqw1F8kCQ2mQSW9s4eu9o2z9E%2BD3wE7myn4%2BQm5cXdfyDngqm0iCnY0rND0emdQIyZDpRK8zxqGCFI1lH6eVqNjWkVAypY4owM%2FG91qsIgIXIS5Im9VX4yl9T%2B8rXFznXISSrjZPL3a002bNkaCrA7uM2CTY7nFmSb3DNbQPlh9Q%2BRSFy4vEMpc1UFh7hXo6%2Feqj7NlB%2BJifczPqEd9uI2H3MrA6E21iaeG4i69q%2FH0k0F0elV%2B33G2s%2F1rLd23ejjNEZ1xVnnCAhJk4CF3AGh2KT7GAocFubRiOSFbqd3MctG95Zv%2FH17efvh0NyeFnYVxPWYEroh5mRWfXjMOh9LHE6%2BZawokLxwB9nThBeIKnOmiIkrnQQxR15Q5gi7M8U7j3fyzrjJGX%2B2zF05bb2vUjhohYjKhM%2B6xHJb5kc7W8xSvSSHA4jFolrDaGN0gELl8h7OhKdcDJka7WkgTlAx6C8bnGxb5vTOwNndnHPT4W5qtjbApB9MANIPXxTd1QPE%2FSWDIyoKlTHFyJ8ahsmf3JUowoWRAwusr2UIKAq%2FIvrr4uJNcaA27dAPN0SznJIJIsgKWn30w1Le9ygY6mAFCo%2FmnhTXO0eeh%2FyAVZGFYceSjGyC5N2cDdemKCq55zT178%2BlUstVjuXMbYRNpAswAImhpY%2FNCR%2FNIbv4MtP5eUL%2FZW2nRBH%2FfJ1d6MggAyBNQL1RQjeDhKWEU8T2MOXoAoh1OvgYp8Sx8YRD%2B8aoYNkyp7s14qAoiurSdq7L2gl7GTxmLOj715eJqgwnTP4TifkBniddxGA%3D%3D&Expires=1766809923)
+[4](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/59cde1ba-e58e-465e-9169-24dae6e34a3a/Snimok-ekrana-2025-12-27-015452.jpg?AWSAccessKeyId=ASIA2F3EMEYEQRJBR2VD&Signature=y%2F2X%2Fbu71GecCKurqvUcQbWdyLk%3D&x-amz-security-token=IQoJb3JpZ2luX2VjEJ3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCICiCyG4kCg2BVTMWxuZSffM7PCX69Jwdmy3eejIu36MhAiEAmArc6Ts%2FyMWvpuDQB4KBzkzrSwu31E7GO6U01slF1ZMq8wQIZRABGgw2OTk3NTMzMDk3MDUiDAbaW%2BZv6Latgtyv6SrQBOr7w2I2KJTTKzaRMq7OCGoN8H5wE%2BjqYZhralBU1LmviQ9Qd%2FbHEgO2uLDhF3J%2FymEynfbnNArA9OO3iNU7R8K%2BpKCcLle04Rsczx4FqFl7Z%2BXygha581s0TbDYdcJsWA0q%2BjfPMIvgpibGcWgC2njHHO2jvo%2Fw9UUFYrPtabFGr5QrEmVFsJN%2F6%2BYIj%2BzkqZFt7nTXTzzI1Kqw1F8kCQ2mQSW9s4eu9o2z9E%2BD3wE7myn4%2BQm5cXdfyDngqm0iCnY0rND0emdQIyZDpRK8zxqGCFI1lH6eVqNjWkVAypY4owM%2FG91qsIgIXIS5Im9VX4yl9T%2B8rXFznXISSrjZPL3a002bNkaCrA7uM2CTY7nFmSb3DNbQPlh9Q%2BRSFy4vEMpc1UFh7hXo6%2Feqj7NlB%2BJifczPqEd9uI2H3MrA6E21iaeG4i69q%2FH0k0F0elV%2B33G2s%2F1rLd23ejjNEZ1xVnnCAhJk4CF3AGh2KT7GAocFubRiOSFbqd3MctG95Zv%2FH17efvh0NyeFnYVxPWYEroh5mRWfXjMOh9LHE6%2BZawokLxwB9nThBeIKnOmiIkrnQQxR15Q5gi7M8U7j3fyzrjJGX%2B2zF05bb2vUjhohYjKhM%2B6xHJb5kc7W8xSvSSHA4jFolrDaGN0gELl8h7OhKdcDJka7WkgTlAx6C8bnGxb5vTOwNndnHPT4W5qtjbApB9MANIPXxTd1QPE%2FSWDIyoKlTHFyJ8ahsmf3JUowoWRAwusr2UIKAq%2FIvrr4uJNcaA27dAPN0SznJIJIsgKWn30w1Le9ygY6mAFCo%2FmnhTXO0eeh%2FyAVZGFYceSjGyC5N2cDdemKCq55zT178%2BlUstVjuXMbYRNpAswAImhpY%2FNCR%2FNIbv4MtP5eUL%2FZW2nRBH%2FfJ1d6MggAyBNQL1RQjeDhKWEU8T2MOXoAoh1OvgYp8Sx8YRD%2B8aoYNkyp7s14qAoiurSdq7L2gl7GTxmLOj715eJqgwnTP4TifkBniddxGA%3D%3D&Expires=1766809923)
+[5](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/2e420ac2-7178-4c69-a54b-db8dd556ece7/logs.1766808822061.log)
+[6](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/25bc0147-094b-4c37-bbaf-983b82a32578/logs_result.json)
+[7](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/4bec566b-ac4f-47e0-b19a-d553dc05539e/Snimok-ekrana-2025-12-26-082000.jpg)
+[8](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/5bd853ca-d5f5-41b9-8d76-c0dcab8e36f3/Snimok-ekrana-2025-12-26-081810.jpg)
+[9](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/98c736ba-5b57-417f-b5d0-342ff44186a1/Snimok-ekrana-2025-12-26-083028.jpg)
+[10](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/35e9749a-1460-40d4-b130-670f42dd4b69/Snimok-ekrana-2025-12-26-214055.jpg)
+[11](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/3dd5e569-5ad9-462f-b48e-a7e5ca286d88/Snimok-ekrana-2025-12-26-231954.jpg)
+[12](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/6f484020-2728-4296-9c33-03c391566689/Snimok-ekrana-2025-12-26-232151.jpg)
+[13](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/8ed9515f-5a0e-40fa-8fbd-0dc00e3162f9/Snimok-ekrana-2025-12-26-232049.jpg)
+[14](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/df14b804-62f5-4a20-b706-190a5a5c15c3/Snimok-ekrana-2025-12-26-232131.jpg)
+[15](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/db3bafe8-399f-4656-a09b-82950e7eab04/Snimok-ekrana-2025-12-26-231849.jpg)
+[16](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/1f70c058-6a29-4ab7-b011-e955997010f0/logs.1766784797225.log)
+[17](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/942ffedb-5df2-4474-b7fb-e3999d6d5789/logs.1766788670836.log)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+71====
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

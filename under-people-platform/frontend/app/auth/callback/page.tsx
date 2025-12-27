@@ -1,27 +1,142 @@
 'use client';
-import { Suspense } from 'react';
-import AuthCallbackContent from './AuthCallbackContent';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
 
-// Loading fallback
+function AuthCallbackContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const code = searchParams.get('code');
+  const login = useAuthStore((state) => state.login);
+  const [status, setStatus] = useState<string>('INITIALIZING SECURE HANDSHAKE...');
+  const [errorDetails, setErrorDetails] = useState<string>('');
+
+  useEffect(() => {
+    if (!code) {
+      setStatus('ERROR: MISSING AUTH CODE');
+      console.error('❌ [AUTH] No code in URL params');
+      return;
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+      setStatus('ERROR: API URL NOT CONFIGURED');
+      console.error('❌ [AUTH] NEXT_PUBLIC_API_URL is not set');
+      return;
+    }
+
+    console.log('🔐 [AUTH CALLBACK] Starting auth flow');
+    console.log('Code:', code);
+    console.log('API URL:', apiUrl);
+
+    setStatus('CONNECTING TO NEURAL NETWORK...');
+
+    // Делаем запрос на обмен кода
+    fetch(`${apiUrl}/api/auth/callback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ code }),
+    })
+      .then(async (res) => {
+        console.log('📨 [AUTH] Response status:', res.status);
+
+        if (!res.ok) {
+          // Пытаемся прочитать текст ошибки от сервера
+          const errorText = await res.text();
+          console.error('❌ [AUTH] Server error:', errorText);
+          throw new Error(`Server Error (${res.status}): ${errorText || 'No response body'}`);
+        }
+
+        const data = await res.json();
+        console.log('✅ [AUTH] Received data:', data);
+        return data;
+      })
+      .then((data) => {
+        if (data.access_token && data.user) {
+          setStatus('ACCESS GRANTED. REDIRECTING...');
+          console.log('✅ [AUTH] Token received, logging in user:', data.user);
+
+          // Сохраняем данные пользователя
+          login({
+            id: data.user.id || data.user.telegram_id.toString(),
+            username: data.user.username || 'Stalker',
+            telegram_id: data.user.telegram_id,
+            up_coins: data.user.up_coins || 0,
+            role: data.user.role || 'ranger',
+            clan: data.user.clan || 'Novice',
+            ref_code: data.user.ref_code || `UP-${data.user.telegram_id}`,
+            avatar_url: data.user.avatar_url,
+            token: data.access_token,
+            is_verified: true,
+          });
+
+          // Небольшая задержка для красоты
+          setTimeout(() => {
+            console.log('🚀 [AUTH] Redirecting to /shelter');
+            router.push('/shelter');
+          }, 1000);
+        } else {
+          throw new Error('Token or user data missing in response');
+        }
+      })
+      .catch((err) => {
+        console.error('❌ [AUTH CALLBACK ERROR]', err);
+        setStatus('ACCESS DENIED');
+
+        // Детальная информация об ошибке
+        let errorMsg = 'Unknown error';
+        if (err instanceof TypeError && err.message.includes('fetch')) {
+          errorMsg = 'CORS/Network Error: Check API URL or Backend CORS settings';
+        } else if (err instanceof SyntaxError) {
+          errorMsg = 'Invalid JSON response from server';
+        } else {
+          errorMsg = err.message || 'Network Error';
+        }
+
+        setErrorDetails(errorMsg);
+      });
+  }, [code, login]);
+
+  return (
+    <div className="min-h-screen bg-black text-[#8A0303] flex flex-col items-center justify-center font-mono p-4">
+      <h1 className="text-2xl md:text-4xl font-black mb-6 tracking-widest animate-pulse text-center">
+        {status}
+      </h1>
+
+      {errorDetails && (
+        <div className="border border-red-900 bg-red-950/30 p-4 max-w-md w-full text-xs md:text-sm text-red-400 rounded-sm">
+          <p className="font-bold mb-3 uppercase tracking-wider">🔍 Diagnostic Report:</p>
+          <code className="break-all block bg-red-900/20 p-2 mb-3 rounded-sm">{errorDetails}</code>
+          <p className="text-[10px] text-red-500 mb-4">
+            💡 Troubleshooting:
+            <br />
+            • Check if API_URL in Vercel Environment Variables is set correctly (HTTPS)
+            <br />
+            • Verify backend is running and CORS is configured
+            <br />
+            • Check browser DevTools Network tab for failed requests
+          </p>
+          <button
+            onClick={() => router.push('/')}
+            className="w-full border border-red-800 py-2 hover:bg-red-900/50 transition-colors uppercase text-sm font-bold"
+          >
+            Return to Surface
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      <div className="relative z-10 text-center space-y-6">
-        <div className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-600 animate-pulse">
-          ESTABLISHING<br />SECURE LINK
-        </div>
-        <p className="text-[#8A0303] font-mono text-xs tracking-[0.3em] uppercase">
-          Neural Interface Active
-        </p>
-        <div className="flex items-center justify-center gap-2 pt-4">
-          <div className="w-2 h-2 bg-[#8A0303] rounded-full animate-pulse" />
-          <span className="font-mono text-xs text-zinc-600">[ INITIALIZING... ]</span>
-          <div className="w-2 h-2 bg-[#8A0303] rounded-full animate-pulse" />
-        </div>
-      </div>
-
-      <div className="absolute bottom-6 left-6 w-8 h-8 border-2 border-[#8A0303]/20 opacity-50" />
-      <div className="absolute top-6 right-6 w-12 h-12 border-2 border-[#8A0303]/10 opacity-30" />
+    <div className="min-h-screen bg-black text-[#8A0303] flex flex-col items-center justify-center font-mono p-4">
+      <h1 className="text-2xl md:text-4xl font-black mb-6 tracking-widest animate-pulse text-center">
+        ESTABLISHING SECURE LINK...
+      </h1>
     </div>
   );
 }
