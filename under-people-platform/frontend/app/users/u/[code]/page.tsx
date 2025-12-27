@@ -16,6 +16,7 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -29,6 +30,7 @@ export default function PublicProfilePage() {
       } catch (err) {
         console.error('❌ [PUBLIC PROFILE] Exception:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch profile');
+        setDebugInfo(`API URL: ${process.env.NEXT_PUBLIC_API_URL || 'not set'}\nCode: ${code}\nError: ${err}`);
       } finally {
         setLoading(false);
       }
@@ -68,7 +70,16 @@ export default function PublicProfilePage() {
           <h1 className="text-6xl font-bold text-red-500 mb-4">404</h1>
           <h2 className="text-2xl font-bold mb-2">PROFILE NOT FOUND</h2>
           <p className="text-gray-400 mb-2 font-mono text-sm">CODE: {code}</p>
-          {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+          {error && (
+            <>
+              <p className="text-red-400 text-sm mb-4">{error}</p>
+              {isDev && debugInfo && (
+                <pre className="text-xs text-gray-500 bg-gray-950 p-3 rounded overflow-auto max-h-40 text-left mb-4">
+                  {debugInfo}
+                </pre>
+              )}
+            </>
+          )}
           <a
             href="https://t.me/UPCworld_bot"
             className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"

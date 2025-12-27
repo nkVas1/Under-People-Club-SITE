@@ -26,6 +26,21 @@ export class ApiClient {
   }
 
   /**
+   * Check if API is accessible
+   */
+  static async checkHealth(): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_URL}/api/health`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Exchange auth code for access token
    * @param code - Auth code from Telegram bot
    */
