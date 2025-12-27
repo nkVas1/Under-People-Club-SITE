@@ -18,7 +18,7 @@
 - [ ] Production URL: https://upcworldbot-production.up.railway.app
 
 ### Telegram Bot
-- [ ] Bot создан (@upc_world_bot)
+- [ ] Bot создан (@UPCworld_bot)
 - [ ] WebApp добавлен
 
 ---
