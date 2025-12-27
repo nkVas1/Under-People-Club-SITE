@@ -73,23 +73,23 @@ export default function ShelterProfile() {
         {/* Аватар */}
         <div className="w-40 h-40 rounded-full border-4 border-[#1a1a1a] overflow-hidden mb-6 relative group">
           <img 
-            src={user.photo_url || user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.first_name)}&background=8A0303&color=fff`} 
+            src={user?.photo_url || user?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.first_name || 'Member')}&background=8A0303&color=fff`} 
             alt="Avatar" 
             className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
           />
           <div className="absolute inset-0 bg-[#8A0303]/20 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
-        <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-1">{user.username}</h2>
-        <p className="text-[#8A0303] font-mono text-sm tracking-[0.2em] mb-8">{user.role.toUpperCase()} // {user.clan}</p>
+        <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-1">{user?.username || 'MEMBER'}</h2>
+        <p className="text-[#8A0303] font-mono text-sm tracking-[0.2em] mb-8">{user?.role?.toUpperCase() || 'MEMBER'} // {user.clan || 'UNAFFILIATED'}</p>
 
         {/* QR Код */}
-        <UserQRCode value={`${SITE_URL}/u/${user.referral_code || user.referral_code || user.ref_code}`} label="ПРОПУСК" />
+        <UserQRCode value={`${SITE_URL}/u/${user?.referral_code || user?.ref_code || 'guest'}`} label="ПРОПУСК" />
         
         <div className="mt-8 w-full border-t border-[#222] pt-4 text-center">
           <p className="text-zinc-600 text-[10px] font-mono mb-1">КОД РЕФЕРАЛА</p>
           <p className="text-xl text-white font-mono tracking-widest select-all cursor-pointer hover:text-[#8A0303] transition-colors">
-            {user.ref_code}
+            {user?.ref_code || user?.referral_code || 'UP-GUEST'}
           </p>
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function ShelterProfile() {
           <div className="relative z-10">
             <h3 className="text-zinc-500 text-xs font-mono uppercase tracking-widest mb-2">Баланс кошелька</h3>
             <div className="text-6xl md:text-7xl font-black text-white flex items-baseline gap-2">
-              {user.up_coins} <span className="text-xl text-[#8A0303] font-normal font-mono">UP</span>
+              {user?.up_coins ?? 0} <span className="text-xl text-[#8A0303] font-normal font-mono">UP</span>
             </div>
           </div>
           {/* Фоновый логотип монеты */}

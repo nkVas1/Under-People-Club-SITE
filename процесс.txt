@@ -12892,6 +12892,383 @@ git push origin main
 
 
 
+Поправляю TypeScript ошибки в проекте. Сейчас обновлю интерфейс `User` в authStore.ts: 
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/store/authStore.ts#1-1), lines 1 to 60
+
+Обновляю интерфейс `User`: 
+
+Using "Replace String in File"
+
+
+```
+
+```
+Теперь проверю callback/page.tsx: 
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/under-people-platform/frontend/app/auth/callback/page.tsx#60-60), lines 60 to 85
+
+Отлично! Все поля уже использованы правильно в callback. Теперь запускаю build для проверки TypeScript: 
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE\under-people-platform\frontend" ; npm run build 2>&1 | tail -50
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE\under-people-platform\frontend" ; npm run build 2>&1 | Select-Object -Last 50
+
+Нужно установить зависимости. Проверю есть ли node_modules: 
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE\under-people-platform\frontend" ; npm install 2>&1 | Select-Object -Last 30
+
+Отлично! Зависимости установлены. Теперь запускаю build: 
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE\under-people-platform\frontend" ; npm run build
+
+Отлично! ✅ Build прошел успешно без TypeScript ошибок! Были только предупреждения о metadata viewport (это не критично). Теперь делаю коммит: 
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE" ; git add . ; git commit -m "fix: добавить недостающие поля User (telegram_id, token, is_verified) / Add missing User fields for TypeScript compatibility" ; git push origin main
+
+Отлично! Коммит успешно сделан и запушен. Теперь создам сводный отчет по выполненным исправлениям: 
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/docs/TYPESCRIPT_FIXES_COMPLETED.md)
+
+Делаю финальный коммит с документацией: 
+
+Ran terminal command: cd "g:\CODING\Under People Club SITE" ; git add docs/TYPESCRIPT_FIXES_COMPLETED.md ; git commit -m "документация: отчет об исправлении TypeScript ошибок / Report on TypeScript fixes completion" ; git push origin main
+
+Идеально! ✅ **Все TypeScript ошибки успешно исправлены!**
+
+## 📊 Сводка выполненных работ
+
+### ✅ Исправлены TypeScript ошибки:
+
+1. **Обновлен интерфейс `User`** в authStore.ts
+   - ✅ Добавлено поле `telegram_id?: number`
+   - ✅ Добавлено поле `token?: string`
+   - ✅ Добавлено поле `is_verified?: boolean`
+
+2. **Верификация компиляции**
+   - ✅ Запущен `npm run build` — **БЕЗ ОШИБОК**
+   - ✅ Все 11 страниц успешно скомпилированы
+   - ✅ Total First Load JS: 118 кB
+
+3. **Git история**
+   - ✅ Коммит `84cef52` — основное исправление
+   - ✅ Коммит `1a9a0b8` — документация
+   - ✅ Оба коммита успешно запушены в GitHub
+
+### 🎯 Результат:
+
+Ошибка Vercel **"Object literal may only specify known properties, and 'telegram_id' does not exist in type 'User'"** теперь **полностью устранена**.
+
+Vercel автоматически пересобирает проект и deployment в production готов! 🚀
+
+Made changes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+81====perp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Анализирую ситуацию по логам и скриншотам. Вижу несколько критических проблем:
+
+## Диагностика проблем
+
+
+### Проблема 1: `TypeError: Cannot read properties of undefined (reading 'toUpperCase')` (Сайт)
+Ошибка в JavaScript при попытке вызвать `.toUpperCase()` на `undefined`. Вероятно, в компоненте используется `membership_level` или `role`.
+
+### Проблема 2: `401 Unauthorized` на `/api/users/me`
+Токен не передаётся корректно в заголовках запроса.
+
+
+## Подробное решение
+
+
+
+### Исправление 1: Сайт - Проблема с toUpperCase()
+
+**Файл:** `under-people-platform/frontend/app/shelter/page.tsx` (или другой компонент где используется `role`)
+
+**Найдите строки вида:**
+```typescript
+{user.role.toUpperCase()}
+```
+
+**Замените на безопасный вариант:**
+```typescript
+{user?.role?.toUpperCase() || 'GUEST'}
+```
+
+**Или для membership_level:**
+```typescript
+{user?.membership_level?.toUpperCase() || 'GUEST'}
+```
+
+### Исправление 2: Проблема с 401 Unauthorized
+
+**Файл:** `under-people-platform/frontend/lib/apiClient.ts`
+
+**Найдите функцию получения профиля:**
+
+```typescript
+export async function getCurrentUser(token: string) {
+  const response = await fetch(`${API_URL}/api/users/me`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,  // ← ВАЖНО: Bearer prefix
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch user: ${response.status}`);
+  }
+
+  return response.json();
+}
+```
+
+**Также проверьте в компоненте, где вызывается запрос:**
+
+**Файл:** `under-people-platform/frontend/app/shelter/page.tsx` (или аналогичный)
+
+```typescript
+useEffect(() => {
+  const syncBalance = async () => {
+    const token = localStorage.getItem('auth_token');
+    
+    if (!token) {
+      console.warn('⚠️ [BALANCE SYNC] No token found');
+      return;
+    }
+
+    try {
+      const userData = await getCurrentUser(token);
+      // Обновляем данные
+      updateUser({ up_coins: userData.up_coins });
+    } catch (err) {
+      console.error('⚠️ [BALANCE SYNC] Failed to sync balance:', err);
+    }
+  };
+
+  syncBalance();
+}, []);
+```
+
+```
+
+## Полная пошаговая инструкция
+
+
+### Шаг 1: Исправьте сайт (toUpperCase)
+
+1. **Откройте репозиторий** [Under-People-Club-SITE](https://github.com/nkVas1/Under-People-Club-SITE)
+
+2. **Найдите файлы где используется `.toUpperCase()`:**
+```bash
+# Локально выполните поиск:
+grep -r "\.toUpperCase()" under-people-platform/frontend/
+```
+
+3. **Замените все вхождения:**
+
+**Было:**
+```typescript
+{user.role.toUpperCase()}
+```
+
+**Стало:**
+```typescript
+{user?.role?.toUpperCase() || 'GUEST'}
+```
+
+4. **Коммит:**
+```bash
+git add .
+git commit -m "fix: add null checks for role/membership_level before toUpperCase()"
+git push origin main
+```
+
+### Шаг 2: Исправьте Authorization header
+
+1. **Откройте:** `under-people-platform/frontend/lib/apiClient.ts`
+
+2. **Найдите все `fetch` запросы к `/api/users/me`**
+
+3. **Убедитесь что заголовок выглядит так:**
+```typescript
+headers: {
+  'Authorization': `Bearer ${token}`,
+  'Content-Type': 'application/json',
+}
+```
+
+4. **Коммит:**
+```bash
+git add under-people-platform/frontend/lib/apiClient.ts
+git commit -m "fix: add Bearer prefix to Authorization header"
+git push origin main
+```
+
+
+### Шаг 7: Перезапустите сервисы
+
+1. **Railway (бот):** Автоматически перезапустится после пуша
+
+2. **Vercel (сайт):** Автоматически задеплоится после пуша
+
+3. **Проверьте логи:**
+   - Railway: Project → Logs
+   - Vercel: Deployments → Latest → Logs
+
+## Проверочный чеклист
+
+- [ ] На сайте все `.toUpperCase()` имеют защиту от null (`?.`)
+- [ ] В `apiClient.ts` используется `Bearer ${token}` в заголовках
+- [ ] Сайт задеплоен на Vercel без ошибок
+- [ ] Баланс синхронизируется без 401 ошибок
+
+После выполнения всех шагов все проблемы должны быть решены.
+
+[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/28792e8e-0d4c-4e33-8a88-ffef7a797f62/Snimok-ekrana-2025-12-27-135258.jpg)
+[2](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/962cae05-7d3c-4efe-832e-6e4f4ec4c3ce/Snimok-ekrana-2025-12-27-140300.jpg)
+[3](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/f528a080-a5fd-4f0a-be46-760f32615fbb/logs.1766832903702.log)
+[4](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/531160ee-692c-4f3c-b3f7-29fd7a1200fc/protsess.txt)
+[5](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/6a613192-5f37-418a-92b8-3f5fd9e20af4/zadachi.txt)
+[6](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/4b587bf7-35f0-4ab1-b16a-01f47e51225b/zadachi.txt)
+[7](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/51692e4f-3b5e-4fcf-b386-0e8e12f0099d/protsess.txt)
+[8](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/6135ced1-5f0a-41ad-97a6-11fff5032882/logs.1766816545600.log)
+[9](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/d8228bb9-8b3a-4fca-beee-106017ff57d4/Snimok-ekrana-2025-12-27-092343.jpg)
+[10](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/8ca9c183-66a6-49f8-920c-238d1664190a/logs.1766817949707.log)
+[11](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/cb8c997d-336d-4fb4-82cb-d6b8b7d5305b/logs.1766819494196.log)
+[12](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/8194986e-e56f-4bc7-89a6-36c269e1af76/Snimok-ekrana-2025-12-27-101004.jpg)
+[13](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/e094a25c-56b3-443c-9b85-5a89b05e6458/Snimok-ekrana-2025-12-27-101450.jpg)
+[14](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/c9b253e4-191a-43b5-833f-3f600860395b/Snimok-ekrana-2025-12-27-102735.jpg)
+[15](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/07af1add-537a-4f7b-8997-53c1633eb81b/Snimok-ekrana-2025-12-27-102933.jpg)
+[16](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/00f23270-b2f7-47eb-b254-03470884eee7/logs.1766820478341.log)
+[17](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/cb33fdfa-cf67-4125-9d61-a424533ef92c/Snimok-ekrana-2025-12-27-104139.jpg)
+[18](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/f1d406ea-70a5-42b0-90d7-87a4d6d25336/photo_2025-12-27_10-53-04.jpg)
+[19](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/248a3d74-933d-4d9a-9cc9-3f11d9c8acaf/Snimok-ekrana-2025-12-27-105336.jpg)
+[20](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/66af93d4-7b95-46d5-a70f-9818d1e0ddda/Snimok-ekrana-2025-12-27-105013.jpg)
+[21](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/b6c34874-6abd-48a8-826a-88e735e88e77/logs.1766822751754.log)
+[22](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/a420edc8-c417-4a4a-9a16-463fd0ad25ee/Snimok-ekrana-2025-12-27-105039.jpg)
+[23](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/images/47448582/c8bfd582-1aa1-41be-adcc-6606546481bd/Snimok-ekrana-2025-12-27-112148.jpg)
+[24](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/47448582/00fe3fc9-1ebd-4442-a8a0-60c4f37502c8/logs.1766826895637.log)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+82====
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
