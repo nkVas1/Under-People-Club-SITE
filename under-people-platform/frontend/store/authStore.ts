@@ -37,7 +37,14 @@ export const useAuthStore = create<AuthState>()(
       
       login: (userData: User) => {
         console.log("🔐 [AUTH] Logging in:", userData.username);
-        set({ user: userData, isAuthenticated: true });
+        
+        // 🔴 CRITICAL: Save the access_token to localStorage
+        if (userData.token) {
+          localStorage.setItem('auth_token', userData.token);
+          console.log('💾 [AUTH] Token saved to localStorage');
+        }
+        
+        set({ user: userData, isAuthenticated: true, token: userData.token });
       },
       
       logout: () => {

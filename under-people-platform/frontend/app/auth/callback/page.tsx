@@ -60,7 +60,14 @@ function AuthCallbackContent() {
         const data = await response.json();
         console.log('✅ [AUTH] Received data:', data);
 
-        if (!data.token || !data.user) {
+        // 🔴 CRITICAL FIX: Check for access_token, not token!
+        if (!data.access_token || !data.user) {
+          console.error('❌ [AUTH] Missing fields:', {
+            has_access_token: !!data.access_token,
+            has_token: !!data.token,
+            has_user: !!data.user,
+            received_keys: Object.keys(data)
+          });
           throw new Error('Token or user data missing in response');
         }
 
@@ -80,11 +87,13 @@ function AuthCallbackContent() {
           photo_url: data.user.avatar_url,
           membership_level: data.user.role,
           telegram_id: data.user.telegram_id,
-          token: data.token,
+          token: data.access_token,  // 🔴 FIXED: Use access_token from backend
           is_verified: true,
         });
 
-        localStorage.setItem('auth_token', data.token);
+        // Store the access_token in localStorage
+        localStorage.setItem('auth_token', data.access_token);  // 🔴 FIXED!
+        console.log('💾 [AUTH] Token saved to localStorage');
 
         setTimeout(() => {
           console.log('🚀 [AUTH] Redirecting to /shelter');
