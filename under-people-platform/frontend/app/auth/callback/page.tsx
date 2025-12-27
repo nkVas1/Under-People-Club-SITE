@@ -62,16 +62,23 @@ function AuthCallbackContent() {
           // Сохраняем данные пользователя
           login({
             id: data.user.id || data.user.telegram_id.toString(),
-            username: data.user.username || 'Stalker',
-            telegram_id: data.user.telegram_id,
+            username: data.user.username || data.user.first_name,
+            first_name: data.user.first_name,
+            role: data.user.membership_level,
+            clan: 'UNAFFILIATED',
             up_coins: data.user.up_coins || 0,
-            role: data.user.role || 'ranger',
-            clan: data.user.clan || 'Novice',
-            ref_code: data.user.ref_code || `UP-${data.user.telegram_id}`,
-            avatar_url: data.user.avatar_url,
+            avatar_url: data.user.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.first_name)}&background=8A0303&color=fff`,
+            ref_code: data.user.referral_code,  // ← ИСПОЛЬЗОВАТЬ referral_code ИЗ API
+            referral_code: data.user.referral_code,
+            photo_url: data.user.photo_url,
+            membership_level: data.user.membership_level,
+            telegram_id: data.user.telegram_id,
             token: data.access_token,
             is_verified: true,
           });
+
+          // Сохраняем токен в localStorage для API запросов
+          localStorage.setItem('auth_token', data.access_token);
 
           // Небольшая задержка для красоты
           setTimeout(() => {

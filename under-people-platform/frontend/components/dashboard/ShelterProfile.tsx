@@ -1,5 +1,6 @@
 'use client';
 import { useAuth } from '@/hooks/useAuth';
+import { useSyncBalance } from '@/hooks/useSyncBalance';
 import TelegramAuth from '@/components/auth/TelegramAuth';
 import UserQRCode from './UserQRCode';
 import { SITE_URL } from '@/lib/config';
@@ -8,6 +9,9 @@ import { useEffect } from 'react';
 
 export default function ShelterProfile() {
   const { user, isAuthenticated, isHydrated, logout } = useAuth();
+  
+  // Синхронизируем баланс каждые 30 секунд
+  useSyncBalance();
 
   // Анимация входа
   useEffect(() => {
@@ -68,7 +72,11 @@ export default function ShelterProfile() {
 
         {/* Аватар */}
         <div className="w-40 h-40 rounded-full border-4 border-[#1a1a1a] overflow-hidden mb-6 relative group">
-          <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+          <img 
+            src={user.photo_url || user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.first_name)}&background=8A0303&color=fff`} 
+            alt="Avatar" 
+            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+          />
           <div className="absolute inset-0 bg-[#8A0303]/20 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
@@ -76,7 +84,7 @@ export default function ShelterProfile() {
         <p className="text-[#8A0303] font-mono text-sm tracking-[0.2em] mb-8">{user.role.toUpperCase()} // {user.clan}</p>
 
         {/* QR Код */}
-        <UserQRCode value={`${SITE_URL}/u/${user.ref_code}`} label="ПРОПУСК" />
+        <UserQRCode value={`${SITE_URL}/u/${user.referral_code || user.referral_code || user.ref_code}`} label="ПРОПУСК" />
         
         <div className="mt-8 w-full border-t border-[#222] pt-4 text-center">
           <p className="text-zinc-600 text-[10px] font-mono mb-1">КОД РЕФЕРАЛА</p>

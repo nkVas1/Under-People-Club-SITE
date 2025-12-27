@@ -5,14 +5,15 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 export interface User {
   id: string;
   username: string;
-  telegram_id: number;
-  up_coins: number;
-  role: 'ranger' | 'stalker' | 'elder';
+  first_name: string;
+  role: string;
   clan: string;
+  up_coins: number;
+  avatar_url: string;
   ref_code: string;
-  avatar_url?: string;
-  is_verified?: boolean;
-  token?: string;
+  referral_code: string;  // ← ДОБАВИТЬ
+  photo_url?: string;  // ← ДОБАВИТЬ
+  membership_level: string;  // ← ДОБАВИТЬ
 }
 
 interface AuthState {
@@ -21,6 +22,8 @@ interface AuthState {
   login: (userData: User) => void;
   logout: () => void;
   updateCoins: (amount: number) => void;
+  updateUser: (userData: Partial<User>) => void;  // ← ДОБАВИТЬ
+  token?: string;  // ← ДОБАВИТЬ ДЛЯ API ЗАПРОСОВ
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -43,6 +46,11 @@ export const useAuthStore = create<AuthState>()(
       updateCoins: (amount: number) => 
         set((state) => ({
           user: state.user ? { ...state.user, up_coins: amount } : null
+        })),
+
+      updateUser: (userData: Partial<User>) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...userData } : null
         })),
     }),
     {
