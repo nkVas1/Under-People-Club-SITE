@@ -19008,6 +19008,79 @@ curl https://upcworldbot-production.up.railway.app/api/users/u/ZXO8LKDI
 
 
 
+Отлично! Вижу проблему. Нужно исправить два файла в **Under-People-Club-SITE** проекте. Давайте внесём все исправления: Нужно работать в правильной директории. Давайте проверим структуру: 
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE)
+
+Вижу! Проект находится в `Under People Club SITE/frontend`, не в under-people-platform. Давайте обновим нужные файлы: Давайте проверим структуру frontend: 
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/frontend)
+
+Read [](file:///g%3A/CODING/Under%20People%20Club%20SITE/frontend/app)
+
+Видимо, структура другая. Давайте проверим полностью: 
+
+Ran terminal command: Get-ChildItem -Recurse -Path "g:\CODING\Under People Club SITE\frontend" -Filter "*callback*" 2>/dev/null | Select-Object FullName
+
+Ran terminal command: Get-ChildItem -Recurse -Path "g:\CODING\Under People Club SITE\frontend" -Filter "*callback*" | Select-Object FullName
+
+Файл callback не существует в этом frontend проекте. Давайте проверим структуру более детально: 
+
+Ran terminal command: tree "g:\CODING\Under People Club SITE\frontend" -L 3 -I node_modules
+
+Ran terminal command: Get-ChildItem -Path "g:\CODING\Under People Club SITE\frontend" -Recurse | Where-Object { $_.PSIsContainer -eq $false } | Select-Object FullName
+
+Похоже frontend папка пустая или имеет другую структуру. Давайте проверим, если ли там вообще файлы: 
+
+Ran terminal command: dir "g:\CODING\Under People Club SITE\frontend" /s
+
+Папка frontend не существует! Нужно её создать с файлами. Давайте создадим структуру и файлы: 
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/frontend/app/auth/callback)
+
+Created [](file:///g%3A/CODING/Under%20People%20Club%20SITE/frontend/app/users/u/%5Bcode%5D)
+
+Теперь создадим файлы с правильным кодом: 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+102====
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
