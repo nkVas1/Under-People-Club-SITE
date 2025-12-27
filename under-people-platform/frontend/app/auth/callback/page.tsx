@@ -3,6 +3,25 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 
+// Telegram WebApp type declaration
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp: {
+        initData: string;
+        initDataUnsafe: {
+          user?: {
+            id: number;
+            first_name: string;
+            last_name?: string;
+            username?: string;
+          };
+        };
+      };
+    };
+  }
+}
+
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -19,9 +38,11 @@ function AuthCallbackContent() {
     }
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const telegramId = typeof window !== 'undefined' 
-      ? (window as any).Telegram?.WebApp?.initData?.user?.id 
-      : null;
+    
+    // КРИТИЧНО: Используем initDataUnsafe вместо initData для получения user.id
+    const telegramWebApp = typeof window !== 'undefined' ? window.Telegram?.WebApp : null;
+    const telegramUser = telegramWebApp?.initDataUnsafe?.user;
+    const telegramId = telegramUser?.id;
     
     if (!apiUrl) {
       setStatus('ERROR: API URL NOT CONFIGURED');
@@ -32,12 +53,19 @@ function AuthCallbackContent() {
     if (!telegramId) {
       setStatus('ERROR: TELEGRAM ID NOT AVAILABLE');
       console.error('❌ [AUTH] Telegram ID is not available');
+      console.error('🔍 Debug info:', {
+        telegramWebApp: !!telegramWebApp,
+        initDataUnsafe: !!telegramWebApp?.initDataUnsafe,
+        user: telegramUser,
+        telegramId: telegramId,
+      });
       return;
     }
 
     console.log('🔐 [AUTH CALLBACK] Starting auth flow');
     console.log('Code:', code);
-    console.log('Telegram ID:', telegramId);
+    console.log('Telegram User ID:', telegramId);
+    console.log('Telegram User:', telegramUser);
     console.log('API URL:', apiUrl);
 
     setStatus('CONNECTING TO NEURAL NETWORK...');

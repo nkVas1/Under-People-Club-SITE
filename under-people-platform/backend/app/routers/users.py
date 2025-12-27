@@ -134,12 +134,26 @@ async def get_user_profile(user_id: str, db: Session = Depends(get_db)):
 
 @router.get("/u/{referral_code}")
 async def get_public_profile(referral_code: str, db: Session = Depends(get_db)):
-    """Get public user profile by referral code."""
+    """
+    Get public user profile by referral code.
+    
+    GET /api/users/u/{referral_code}
+    """
     try:
+        # Логируем запрос для диагностики
+        print(f"🔍 [PUBLIC PROFILE] Searching for referral_code: {referral_code}")
+        
         user = db.query(User).filter(User.referral_code == referral_code).first()
         
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            print(f"❌ [PUBLIC PROFILE] User not found - CODE: {referral_code}")
+            raise HTTPException(
+                status_code=404, 
+                detail=f"PROFILE NOT FOUND - CODE: {referral_code}"
+            )
+        
+        # Логируем успешный поиск
+        print(f"✅ [PUBLIC PROFILE] Found user: {user.username} ({user.referral_code})")
         
         # Возвращаем только публичные данные
         return {
@@ -152,11 +166,13 @@ async def get_public_profile(referral_code: str, db: Session = Depends(get_db)):
                 "achievements_count": 0,  # Placeholder для расширения в будущем
                 "referral_code": user.referral_code,
                 "photo_url": user.avatar_url,
+                "telegram_id": user.telegram_id,
             }
         }
     except HTTPException:
         raise
     except Exception as e:
+        print(f"❌ [PUBLIC PROFILE ERROR] {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/leaderboard")

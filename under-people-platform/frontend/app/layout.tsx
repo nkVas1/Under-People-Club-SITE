@@ -19,6 +19,8 @@ export default function RootLayout({
     <html lang="ru" suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#050505" />
+        {/* Telegram WebApp SDK - КРИТИЧЕН для инициализации WebApp */}
+        <script src="https://telegram.org/js/telegram-web-app.js" />
       </head>
       <body className="bg-void-500 text-white overflow-hidden">
         {children}

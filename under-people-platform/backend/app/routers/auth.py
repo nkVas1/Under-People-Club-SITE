@@ -122,13 +122,21 @@ async def auth_callback(
     
     Rate limited: 60 requests per minute per IP
     """
+    print(f"\n🔐 [AUTH CALLBACK] Starting authentication")
+    print(f"   Code: {code}")
+    print(f"   Telegram ID: {telegram_id}")
+    
     # Проверяем auth code
     auth_data = await get_auth_code(code)
     if not auth_data:
+        print(f"❌ [AUTH CALLBACK] Invalid or expired auth code: {code}")
         raise HTTPException(status_code=401, detail="Invalid or expired auth code")
+    
+    print(f"✅ [AUTH CALLBACK] Auth code verified for telegram_id: {auth_data.get('telegram_id')}")
     
     # Проверяем telegram_id соответствие
     if auth_data.get("telegram_id") != telegram_id:
+        print(f"❌ [AUTH CALLBACK] Telegram ID mismatch: expected {auth_data.get('telegram_id')}, got {telegram_id}")
         raise HTTPException(status_code=401, detail="Telegram ID mismatch")
     
     # Ищем или создаем пользователя
@@ -136,6 +144,7 @@ async def auth_callback(
     
     if not user:
         # Новый пользователь
+        print(f"ℹ️  [AUTH CALLBACK] Creating new user for telegram_id: {telegram_id}")
         user = User(
             telegram_id=telegram_id,
             username=f"User_{telegram_id}",
@@ -145,10 +154,15 @@ async def auth_callback(
         db.add(user)
         db.commit()
         db.refresh(user)
+        print(f"✅ [AUTH CALLBACK] New user created with referral_code: {user.referral_code}")
+    else:
+        print(f"✅ [AUTH CALLBACK] Existing user found: {user.username} ({user.referral_code})")
     
     # TODO: Сгенерировать JWT токен
     # Для теперь возвращаем сессионный токен
     jwt_token = str(uuid.uuid4())
+    
+    print(f"✅ [AUTH CALLBACK] Authentication successful for {user.username}")
     
     return {
         "status": "ok",

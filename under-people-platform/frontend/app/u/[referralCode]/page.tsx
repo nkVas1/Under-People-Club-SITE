@@ -31,16 +31,25 @@ export default function PublicProfilePage() {
           return;
         }
 
-        const response = await fetch(`${apiUrl}/users/u/${referralCode}`);
+        // КРИТИЧНО: Используем правильный путь /api/users/u/{referralCode}
+        const fetchUrl = `${apiUrl}/api/users/u/${referralCode}`;
+        console.log(`🔍 Fetching public profile: ${fetchUrl}`);
+        
+        const response = await fetch(fetchUrl);
 
         if (!response.ok) {
           if (response.status === 404) {
+            console.error(`❌ Profile not found: ${referralCode}`);
             setNotFoundError(true);
           }
+          const errorText = await response.text();
+          console.error(`❌ Error: ${response.status} - ${errorText}`);
           throw new Error(`Failed to fetch profile: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('✅ Profile data received:', data);
+        
         if (data.success && data.user) {
           setUser(data.user);
         } else {
