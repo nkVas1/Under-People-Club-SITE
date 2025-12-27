@@ -3,10 +3,11 @@ import secrets
 import string
 from datetime import datetime
 from enum import Enum as PyEnum
-from sqlalchemy import Column, String, Integer, DateTime, Boolean, ForeignKey, Enum, Float, Text
+from sqlalchemy import Column, String, Integer, DateTime, Boolean, ForeignKey, Enum, Float, Text, event
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, backref
 from app.db.base import Base
+from urllib.parse import quote
 
 class UserRole(str, PyEnum):
     RANGER = "ranger"
@@ -55,10 +56,20 @@ class User(Base):
         code = ''.join(secrets.choice(chars) for _ in range(6))
         return f"UP-{code}"
     
+    @property
+    def dicebear_avatar(self) -> str:
+        """Генерирует DiceBear avataaars URL по referral_code"""
+        seed = self.referral_code or str(self.id)
+        # avataaars стиль с красивыми цветами
+        return f"https://api.dicebear.com/9.x/avataaars/svg?seed={quote(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9&scale=80"
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if not self.referral_code:
             self.referral_code = self.generate_referral_code()
+        # Генерируем аватар если его нет
+        if not self.avatar_url:
+            self.avatar_url = self.dicebear_avatar
 
 
 class Rarity(str, PyEnum):
@@ -105,6 +116,14 @@ class Product(Base):
     product_type = Column(Enum(ProductType))
     stock = Column(Integer, default=-1)
     is_active = Column(Boolean, default=True)
+
+# Event listener для автогенерации avatar_url при создании пользователя
+@event.listens_for(User, 'before_insert')
+def set_avatar_url(mapper, connection, target):
+    """Автоматически генерируем DiceBear аватар если его нет"""
+    if not target.avatar_url and target.referral_code:
+        target.avatar_url = target.dicebear_avatar
+
 
 class OrderStatus(str, PyEnum):
     PENDING = "pending"

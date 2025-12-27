@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Header
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.models import User
@@ -11,6 +11,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.get("/me")
 async def get_current_user(
     response: Response,
+    if_none_match: str = Header(None, alias="If-None-Match"),
     current_user: dict = Depends(lambda: {}),  # Placeholder для JWT в будущем
     db: Session = Depends(get_db)
 ):
@@ -20,6 +21,12 @@ async def get_current_user(
     GET /api/users/me
     
     Кэширование: 5 минут (max-age=300)
+    Поддерживает: If-None-Match для ETag валидации
+    
+    Ответы:
+    - 200: Новые данные с полным телом
+    - 304: Not Modified (если If-None-Match совпадает)
+    - 401: Unauthorized
     """
     # TODO: В будущем подставить реального current_user из JWT токена
     # Пока это placeholder - нужно интегрировать с JWT middleware
@@ -30,16 +37,8 @@ async def get_current_user(
     if not user:
         raise HTTPException(status_code=401, detail="User not authenticated")
     
-    # Генерируем ETag на основе ID и времени обновления
-    etag_source = f"{user.id}:{user.last_login or user.created_at}".encode()
-    etag = hashlib.md5(etag_source).hexdigest()
-    
-    # Добавляем кэширующие заголовки
-    response.headers["Cache-Control"] = "private, max-age=300"  # 5 минут
-    response.headers["ETag"] = f'"{etag}"'
-    response.headers["Vary"] = "Authorization"
-    
-    return {
+    # Готовим данные пользователя
+    user_data = {
         "id": str(user.id),
         "telegram_id": user.telegram_id,
         "username": user.username,
@@ -52,6 +51,30 @@ async def get_current_user(
         "created_at": user.created_at.isoformat() if user.created_at else None,
         "last_login": user.last_login.isoformat() if user.last_login else None,
     }
+    
+    # Генерируем ETag на основе данных пользователя
+    # Используем JSON для более точного хеша
+    etag_source = json.dumps(user_data, sort_keys=True).encode()
+    current_etag = hashlib.md5(etag_source).hexdigest()
+    
+    # Проверяем If-None-Match заголовок
+    if if_none_match:
+        # Удаляем кавычки из If-None-Match если они есть
+        client_etag = if_none_match.strip('"')
+        if client_etag == current_etag:
+            # Данные не изменились - отправляем 304
+            response.status_code = 304
+            response.headers["ETag"] = f'"{current_etag}"'
+            response.headers["Cache-Control"] = "private, max-age=300"
+            response.headers["Vary"] = "Authorization"
+            return None  # При 304 не отправляем тело
+    
+    # Добавляем кэширующие заголовки
+    response.headers["Cache-Control"] = "private, max-age=300"  # 5 минут
+    response.headers["ETag"] = f'"{current_etag}"'
+    response.headers["Vary"] = "Authorization"
+    
+    return user_data
 
 @router.post("/me/refresh")
 async def refresh_user_cache(response: Response, db: Session = Depends(get_db)):

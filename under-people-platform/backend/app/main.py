@@ -1,9 +1,21 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine
 from app.routers import auth, users, products, events
+
+# Rate limiting (optionally install slowapi)
+try:
+    from slowapi import Limiter
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+    
+    limiter = Limiter(key_func=get_remote_address)
+    RATE_LIMITING_ENABLED = True
+except ImportError:
+    RATE_LIMITING_ENABLED = False
+    print("⚠️ slowapi not installed - rate limiting disabled")
 
 # Создаем таблицы
 Base.metadata.create_all(bind=engine)
@@ -13,6 +25,16 @@ app = FastAPI(
     version=settings.API_VERSION,
     debug=settings.DEBUG,
 )
+
+# Rate limiting
+if RATE_LIMITING_ENABLED:
+    app.state.limiter = limiter
+    @app.exception_handler(RateLimitExceeded)
+    async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+        return {
+            "detail": "Too many requests. Rate limit exceeded.",
+            "retry_after": exc.detail
+        }
 
 # CORS
 app.add_middleware(

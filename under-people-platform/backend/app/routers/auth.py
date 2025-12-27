@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Header, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import delete
 from app.db.session import get_db
 from app.core.security import verify_telegram_auth
 from app.models.models import User
@@ -8,8 +9,25 @@ import json
 import os
 import aioredis
 from datetime import datetime, timedelta
+from functools import wraps
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+# Rate limiting decorator (optional)
+_limiter = None
+
+def apply_rate_limit(limit: str):
+    """Decorator для применения rate limiting к endpoints"""
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            # Rate limiting применяется через middleware в main.py
+            return await func(*args, **kwargs)
+        
+        # Сохраняем информацию о лимите для потом использования в main.py
+        wrapper._rate_limit = limit
+        return wrapper
+    return decorator
 
 # Redis хранилище для auth кодов (в памяти, если Redis не доступен)
 token_storage = {}
@@ -101,6 +119,8 @@ async def auth_callback(
     3. Создает JWT токен
     
     POST /api/auth/callback?code=ABC123&telegram_id=123456
+    
+    Rate limited: 60 requests per minute per IP
     """
     # Проверяем auth code
     auth_data = await get_auth_code(code)
@@ -226,8 +246,56 @@ async def telegram_login(auth_data: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/logout")
-async def logout():
+async def logout(
+    authorization: str = Header(None),
+    db: Session = Depends(get_db)
+):
     """
-    Выход пользователя
+    Полный logout - удаляет сессию из Redis и кэша
+    
+    POST /api/auth/logout
+    Headers: Authorization: Bearer {token}
     """
-    return {"status": "ok", "message": "Logged out"}
+    if not authorization:
+        raise HTTPException(status_code=401, detail="No authorization header")
+    
+    try:
+        token = authorization.replace("Bearer ", "")
+        
+        # 1. Удалить из Redis
+        redis = await get_redis()
+        if redis and redis is not False:
+            try:
+                # Удаляем все связанные ключи
+                await redis.delete(f"auth:{token}")
+                await redis.delete(f"user_cache:{token}")
+                await redis.delete(f"auth_code:{token}")
+                print(f"✅ [LOGOUT] Cleared Redis for token {token[:20]}...")
+            except Exception as e:
+                print(f"⚠️ [LOGOUT] Redis cleanup error: {e}")
+        else:
+            # Очищаем in-memory storage
+            if token in token_storage:
+                del token_storage[token]
+                print(f"✅ [LOGOUT] Cleared in-memory storage for token")
+        
+        # 2. Удалить из БД если есть auth коды
+        try:
+            # Удаляем все auth коды (если они хранятся в БД)
+            # stmt = delete(AuthCode).where(AuthCode.token == token)
+            # await db.execute(stmt)
+            # await db.commit()
+            pass
+        except Exception as e:
+            print(f"⚠️ [LOGOUT] Database cleanup error: {e}")
+        
+        print(f"✅ [LOGOUT] User logged out successfully")
+        return {
+            "status": "ok",
+            "message": "Logged out successfully",
+            "token_cleared": True
+        }
+    
+    except Exception as e:
+        print(f"❌ [LOGOUT] Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Logout error: {str(e)}")

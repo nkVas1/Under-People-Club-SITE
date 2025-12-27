@@ -41,9 +41,33 @@ export const useAuthStore = create<AuthState>()(
       },
       
       logout: () => {
-        console.log("🔒 [AUTH] Logging out");
+        console.log("🔒 [AUTH] Logging out - clearing all data");
+        
+        // Очищаем Zustand состояние
         set({ user: null, isAuthenticated: false });
+        
+        // Очищаем localStorage полностью
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_token_expires');
+        localStorage.removeItem('user_data');
+        localStorage.removeItem('up-auth-storage');
         localStorage.removeItem('up-cart-storage');
+        localStorage.removeItem('cached_user');
+        localStorage.removeItem('last_fetch');
+        
+        // Очищаем sessionStorage
+        sessionStorage.clear();
+        
+        // Очищаем все cache-related данные
+        if ('caches' in window) {
+          caches.keys().then(cacheNames => {
+            cacheNames.forEach(cacheName => {
+              caches.delete(cacheName);
+            });
+          });
+        }
+        
+        console.log("✅ [AUTH] All data cleared");
       },
 
       updateCoins: (amount: number) => 

@@ -5,10 +5,17 @@ import TelegramAuth from '@/components/auth/TelegramAuth';
 import UserQRCode from './UserQRCode';
 import { SITE_URL } from '@/lib/config';
 import gsap from 'gsap';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 export default function ShelterProfile() {
   const { user, isAuthenticated, isHydrated, logout } = useAuth();
+  
+  // Генерируем DiceBear аватар на основе referral_code
+  const dicebearAvatarUrl = useMemo(() => {
+    const seed = user?.referral_code || user?.id || 'default';
+    // Используем avataaars стиль для более интересных аватаров
+    return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9&scale=80`;
+  }, [user?.referral_code, user?.id]);
   
   // Синхронизируем баланс каждые 30 секунд
   useSyncBalance();
@@ -73,8 +80,9 @@ export default function ShelterProfile() {
         {/* Аватар */}
         <div className="w-40 h-40 rounded-full border-4 border-[#1a1a1a] overflow-hidden mb-6 relative group">
           <img 
-            src={user?.photo_url || user?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.first_name || 'Member')}&background=8A0303&color=fff`} 
+            src={user?.photo_url || dicebearAvatarUrl} 
             alt="Avatar" 
+            loading="lazy"
             className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
           />
           <div className="absolute inset-0 bg-[#8A0303]/20 opacity-0 group-hover:opacity-100 transition-opacity" />
