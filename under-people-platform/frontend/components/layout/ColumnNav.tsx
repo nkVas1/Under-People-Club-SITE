@@ -12,7 +12,7 @@ const SECTIONS = [
     description: 'Личный терминал члена клуба. Статус, активы, доступ.',
     color: 'bg-[#0f0f0f]', 
     hoverColor: 'bg-[#1a1a1a]',
-    img: '/img/bunker_bg.jpg',
+    img: '/img/bunker_card_main.png',
     href: '/shelter' 
   },
   { 
@@ -126,14 +126,23 @@ export default function ColumnNav({ show }: { show: boolean }) {
           className={`relative flex-1 h-full border-r border-[#222] ${section.color} 
             transition-all duration-700 ease-out hover:flex-[3] group cursor-pointer overflow-hidden`}
         >
-          {/* Фоновое изображение (Появляется при ховере) */}
+          {/* 🔴 НОВЫЙ БЛОК: Базовый фон по умолчанию (card_main.png) */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-60 group-hover:opacity-0 transition-opacity duration-700"
+          style={{ 
+            backgroundImage: 'url(/img/card_main.png)',
+            filter: 'grayscale(0.3) brightness(0.5) contrast(1.1)'
+          }}
+        />
+
+        {/* Фоновое изображение (Появляется при ховере) */}
           <div 
             className="absolute inset-0 opacity-0 group-hover:opacity-40 transition-opacity duration-700 bg-cover bg-center grayscale group-hover:grayscale-0"
             style={{ backgroundImage: `url(${section.img})` }} 
           />
           
           {/* Оверлей градиента для читаемости текста */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/95 group-hover:from-black/90 group-hover:via-black/30 group-hover:to-black/90 transition-all duration-700" />
 
           {/* Контент колонки */}
           <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
@@ -155,8 +164,10 @@ export default function ColumnNav({ show }: { show: boolean }) {
               </p>
               
               {/* Декоративная кнопка "ENTER" */}
-              <div className="mt-6 px-4 py-2 border border-zinc-700 text-xs text-white uppercase tracking-widest hover:bg-[#8A0303] hover:border-[#8A0303] transition-all">
-                Access_
+              <div className="mt-6 px-4 py-2 border border-zinc-700 text-xs text-white uppercase tracking-widest hover:bg-[#8A0303] hover:border-[#8A0303] transition-all relative overflow-hidden group/btn">
+                <span className="relative z-10">Access_</span>
+                {/* Эффект "сканирования" при hover */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
               </div>
             </div>
           </div>
